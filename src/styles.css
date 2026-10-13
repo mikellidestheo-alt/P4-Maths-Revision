@@ -199,7 +199,7 @@ svg { display: block; }
 .stars-big { font-size: 3rem; letter-spacing: 6px; }
 .star-on { color: var(--gold); text-shadow: 0 0 12px rgba(255, 209, 102, 0.8); }
 .star-off { color: #4b4180; }
-.rescue-stage { position: relative; width: 220px; height: 170px; }
+.rescue-stage { position: relative; width: 240px; height: 180px; background: radial-gradient(ellipse at 38% 72%, rgba(255, 209, 102, 0.55), rgba(255, 209, 102, 0) 62%); }
 .rescue-tree { position: absolute; right: 10px; bottom: 0; width: 90px; height: 160px; background: linear-gradient(#1d3b3a, #122826); clip-path: polygon(50% 0, 100% 60%, 70% 60%, 100% 100%, 0 100%, 30% 60%, 0 60%); }
 .rescue-friend { position: absolute; left: 10px; bottom: 0; width: 160px; animation: emerge 1.4s ease-out both; }
 .friend-svg { width: 100%; height: auto; }
@@ -588,3 +588,5 @@ svg { display: block; }
   .q-story { font-size: 1.05rem; }
 }
 .scene-dawn { --sky-top: #3b4a9a; --sky-mid: #e58fa0; --sky-low: #ffc98a; --hill-far: #6a4f8a; --hill-near: #3d4f6a; --ground: #3c5a46; }
+/* drawn marks never block taps on the grid dots underneath (the grid works out the nearest dot) */
+.user-tri, .user-seg, .user-dot, .user-cell, .fixed-dot, .grid-ghost, .grid-cursor, .grid-reveal { pointer-events: none; }

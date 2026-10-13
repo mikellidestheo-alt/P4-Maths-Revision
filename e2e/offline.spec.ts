@@ -46,7 +46,7 @@ test('works offline after the first visit, and picks up a new deploy cleanly', a
     await page.click('[data-action="start"]');
     await page.click('[data-job="1.1"]');
     await expect(page.locator('.q-prompt')).toBeVisible();
-    await expect(page.locator('.numpad')).toBeVisible();
+    await expect(page.locator('.widget-holder .widget')).toBeVisible();
     await page.screenshot({ path: 'e2e/screenshots/offline-question.png' });
     await ctx.setOffline(false);
 

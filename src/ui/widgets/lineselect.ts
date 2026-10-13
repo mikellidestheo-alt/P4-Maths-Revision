@@ -6,7 +6,7 @@ import { play } from '../../game/audio';
 
 /** Tap lines to choose them (lines of symmetry, parallel planks…). Tap again to un-choose. */
 export function lineSelectWidget(it: Extract<Interaction, { type: 'lineSelect' }>, ctx: WidgetCtx): Widget {
-  const frame = it.visual.kind === 'lines' ? linesSvg(it.visual) : it.visual.kind === 'shape' ? shapeSvg({ ...it.visual, lines: [] }) : null;
+  const frame = it.visual.kind === 'lines' ? linesSvg(it.visual) : it.visual.kind === 'shape' ? shapeSvg({ ...it.visual, lines: [] }, { w: 280, h: 240 }, it.lines.flatMap((l) => [l.a, l.b])) : null;
   if (!frame) throw new Error('lineSelect needs a lines or shape visual');
   const chosen = new Set<string>();
   let locked = false;

@@ -201,7 +201,7 @@ export async function enterAnswer(page: Page, inf: Info, ans: any, variant = 0) 
 /** Answer the current question correctly (or wrongly `wrongTimes` first), then press Next. */
 export async function playQuestion(page: Page, opts: { wrongTimes?: 0 | 1 | 2; variant?: number } = {}) {
   const wrongTimes = opts.wrongTimes ?? 0;
-  await page.waitForFunction(() => (window as any).__camp && !(window as any).__camp.resolved);
+  await page.waitForFunction(() => (window as any).__camp && !(window as any).__camp.resolved, null, { timeout: 20_000 });
   let inf = await info(page);
   for (let w = 0; w < wrongTimes; w++) {
     inf = await info(page);
@@ -307,7 +307,7 @@ export async function playUntil(page: Page, stopAt: (s: string) => boolean, wron
       }
       case 'runner':
       case 'recap': {
-        await page.waitForFunction(() => (window as any).__camp && !(window as any).__camp.resolved);
+        await page.waitForFunction(() => (window as any).__camp && !(window as any).__camp.resolved, null, { timeout: 20_000 });
         const inf = await info(page);
         const w = wrongPlan(q, inf);
         stats.types.add(inf.type);

@@ -202,8 +202,8 @@ export interface ShapeFrame {
   map(p: Point): [number, number];
 }
 
-export function shapeSvg(v: Extract<Visual, { kind: 'shape' }>, box = { w: 280, h: 220 }): ShapeFrame {
-  const all = [...v.pts, ...(v.lines ?? []).flatMap((l) => [l.a, l.b])];
+export function shapeSvg(v: Extract<Visual, { kind: 'shape' }>, box = { w: 280, h: 220 }, extra: Point[] = []): ShapeFrame {
+  const all = [...v.pts, ...(v.lines ?? []).flatMap((l) => [l.a, l.b]), ...extra];
   const minX = Math.min(...all.map((p) => p[0])), maxX = Math.max(...all.map((p) => p[0]));
   const minY = Math.min(...all.map((p) => p[1])), maxY = Math.max(...all.map((p) => p[1]));
   const pad = 34;

@@ -51,7 +51,9 @@ test('wrong-answer flow: hint after 1st miss, worked solution after 2nd, then th
   await expect(page.locator('[data-screen="rescue"]')).toBeVisible();
   const stars = await page.locator('.star-on').count();
   expect(stars).toBeLessThan(3);
+  await page.screenshot({ path: 'e2e/screenshots/wrong-rescue.png' });
   await page.locator('[data-action="rescue-next"]').tap();
+  await page.screenshot({ path: 'e2e/screenshots/wrong-checkin.png' });
   await page.locator('[data-level="hard"]').tap();
   await page.locator('[data-action="goodnight"]').tap();
   await expect(page.locator('[data-screen="home"]')).toBeVisible();

@@ -23,7 +23,7 @@ const projects = viewports.map((v) => ({
 }));
 projects.push({
   name: 'game',
-  testMatch: /(bot|wrong|pacing|storage|widgets)\.spec\.ts/,
+  testMatch: /(bot|wrong|pacing|storage|widgets|lines)\.spec\.ts/,
   use: { ...devices['Desktop Chrome'], viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true, deviceScaleFactor: 1, launchOptions: chromiumPath ? { executablePath: chromiumPath } : {} },
 } as never);
 projects.push({
@@ -47,7 +47,7 @@ export default defineConfig({
   fullyParallel: true,
   workers: 4,
   reporter: [['list']],
-  use: { baseURL: BASE, trace: 'off', screenshot: 'only-on-failure' },
+  use: { baseURL: BASE, trace: 'off', screenshot: 'only-on-failure', actionTimeout: 20_000 },
   webServer: {
     command: 'npx vite preview --port 4173 --strictPort',
     url: BASE,
