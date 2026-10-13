@@ -18,6 +18,17 @@ Playwright 1.56). Nobody has played it on a real phone yet — see "Not verified
 | Offline after first visit; new deploy picked up; old caches removed; offline then serves the new build | ✅ pass |
 | WebKit (Safari engine) | ⚠️ not run — WebKit is not installed in this environment (see below) |
 
+## Deployment status
+- `main` was updated and the **Deploy to GitHub Pages** workflow ran on GitHub: `npm ci`, the 142 unit
+  tests and the production build all **passed on GitHub's runner**. The final Pages step stopped with
+  "Get Pages site failed … Not Found" because Pages is not yet enabled for the repository.
+- **To finish:** GitHub → repository **Settings → Pages → Build and deployment → Source: GitHub
+  Actions**, then **Actions → Deploy to GitHub Pages → Run workflow** (or push any commit). The game
+  will then be live at https://mikellidestheo-alt.github.io/P4-Maths-Revision/.
+- The live URL could not be fetched from this build environment (outbound access to github.io is
+  blocked here), so the deployed site itself has not been loaded by me; the identical build was
+  tested locally (offline/update test serves it under the same `/P4-Maths-Revision/` path).
+
 ## Unit tests (`npm test`)
 
 For **each of the 15 topics**, 600 questions are generated (200 per tier, seeded) and the tests assert:
