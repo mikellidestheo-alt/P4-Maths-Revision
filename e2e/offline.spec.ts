@@ -33,7 +33,7 @@ test('works offline after the first visit, and picks up a new deploy cleanly', a
   const url = 'http://localhost:4180/P4-Maths-Revision/';
   try {
     await page.goto(url);
-    await expect(page.locator('[data-screen="home"]')).toBeVisible();
+    await expect(page.locator('[data-screen="world"]')).toBeVisible();
     await page.waitForFunction(async () => { const r = await navigator.serviceWorker.ready; return !!r.active; });
     await page.reload();
     await page.waitForFunction(() => !!navigator.serviceWorker.controller);
@@ -42,9 +42,10 @@ test('works offline after the first visit, and picks up a new deploy cleanly', a
     // offline: the whole game still loads and plays
     await ctx.setOffline(true);
     await page.reload();
-    await expect(page.locator('[data-screen="home"]')).toBeVisible();
-    await page.click('[data-action="start"]');
-    await page.click('[data-job="1.1"]');
+    await expect(page.locator('[data-screen="world"]')).toBeVisible();
+    await expect(page.locator('.world-canvas canvas')).toBeVisible();
+    await page.click('[data-action="autowalk"]');
+    await page.locator('[data-action="interact"]').click({ timeout: 90_000 });
     await expect(page.locator('.q-prompt')).toBeVisible();
     await expect(page.locator('.widget-holder .widget')).toBeVisible();
     await page.screenshot({ path: 'e2e/screenshots/offline-question.png' });
@@ -61,7 +62,7 @@ test('works offline after the first visit, and picks up a new deploy cleanly', a
     await ctx.setOffline(true);
     await page.reload();
     expect(await page.getAttribute('html', 'data-build')).toBe('deployB');
-    await expect(page.locator('[data-screen="home"]')).toBeVisible();
+    await expect(page.locator('[data-screen="world"]')).toBeVisible();
   } finally {
     await ctx.close();
     server.close();

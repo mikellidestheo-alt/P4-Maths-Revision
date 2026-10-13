@@ -7,7 +7,7 @@ Playwright 1.56). Nobody has played it on a real phone yet — see "Not verified
 
 | Check | Result |
 |---|---|
-| `npm test` — 144 unit tests (engine, planner, every topic generator) | ✅ pass |
+| `npm test` — 152 unit tests (engine, planner, every topic generator) | ✅ pass |
 | `npm run build` — type-check + production build (≈72 KB JS gzipped, 8 KB CSS) | ✅ pass |
 | Bot plays the whole game through the real UI (6 nights, 180 job questions + recaps) to the Dawn | ✅ pass (repeated with fresh random questions — see below) |
 | Bot "wrong answers" variant: retry → hint, worked solution, review marking, Campfire recap, rescue | ✅ pass |
@@ -25,6 +25,33 @@ fixed in `src/config/game.ts`. Then **all night limits were removed** (no daily 
 asleep" rest screen); nights still open in story order. The save schema moved to v3 with migrations
 that keep existing progress. All unit and end-to-end tests were updated and re-run after the change
 (results below reflect the current build).
+
+## Update — 3D world (third person, quest markers)
+The camp and forest are now a 3D world (Three.js): a blocky camper in third person, Wren, the six
+friends as blocky 3D animals, six forest paths with landmarks, quest markers (light beam, ground ring,
+bobbing arrow, a guide arrow by the camper's feet, and a quest card with the distance). Tasks stay 2D
+on a dark forest backdrop. Verified:
+- **Unit tests (152):** every task/campfire/friend spot is open ground; no tree on a path or in camp;
+  every "Walk to marker" route (from camp, from every spot, from the forest edge, to every night)
+  sampled every 0.25 units never touches a tree, plinth, campfire or camp prop; quest order
+  Task 1 → 2 → 3 → campfire (only when needed) → friend; next night after a rescue; "done" after Night 6;
+  save migration.
+- **Bot, 3D:** walks to every marker with the real "Walk to marker" button and presses the real Start
+  button; plays all six nights to the Dawn (~4 minutes including walking).
+- **Bot, 2D fallback (`?2d=1`):** all six nights to the Dawn, so devices without WebGL still work.
+- **Wrong-answer flow in 3D:** after misses, the campfire marker appears before the friend; the friend
+  only appears after the recap.
+- **3D specifics:** keyboard walking moves the camper; the marker moves further along the path after each
+  job; a reload mid-job resumes at the same task; the 3D world loads offline.
+- **Layout:** the world HUD at all six viewports (quest card, joystick and walk button inside the screen
+  and not overlapping) plus the 2D fallback screens.
+- Looked at screenshots of: the camp (with every shop decoration, a pink lantern, Wren's hat), all six
+  friend reveals and landmarks, the dawn world with rescued friends, and the forest backdrop behind tasks.
+  Fixed from those: camera too close on phones, square fireflies, install tip covering the view, bushes
+  hiding Bramble, campfire/plinths without colliders.
+- **Performance:** measured here only with software (CPU) rendering — about 20 fps on a phone-sized
+  screen. Real phones/tablets draw on the GPU and should be much smoother, but this has **not** been
+  checked on a real device. The trees are 2 instanced draw calls; pixel ratio is capped at 1.5.
 
 ## Deployment status
 - GitHub Pages is enabled (source: GitHub Actions). Every push to `main` runs **Deploy to GitHub

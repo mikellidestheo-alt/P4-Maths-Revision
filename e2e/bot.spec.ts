@@ -2,14 +2,14 @@ import { test, expect, type Page } from '@playwright/test';
 import { playUntil, readSave, setTouch, openGame } from './bot';
 
 async function playNight(page: Page, n: number) {
-  await expect(page.locator('[data-screen="home"]')).toBeVisible();
-  await expect(page.locator('[data-tonight]')).toHaveAttribute('data-tonight', String(n));
-  await page.locator('[data-action="start"]').tap();
+  await expect(page.locator('[data-screen="world"]')).toBeVisible();
+  await expect(page.locator('[data-quest]')).toContainText(`Night ${n} of 6`);
   console.log(`[bot] night ${n} started ${new Date().toISOString().slice(11, 19)}`);
-  return playUntil(page, (s) => s === 'home' || s === 'dawn');
+  const finished = async () => (await readSave(page))?.nights?.[n]?.finished === true && (await readSave(page))?.current === null;
+  return playUntil(page, async (s) => s === 'dawn' || (s === 'world' && (await finished())));
 }
 
-test('bot plays all six nights in one sitting through the real UI and reaches the Dawn (no night limit)', async ({ page }) => {
+test('bot plays all six nights in the 3D world through the real UI and reaches the Dawn', async ({ page }) => {
   test.setTimeout(40 * 60_000);
   setTouch(true);
   const errors: string[] = [];
@@ -25,12 +25,14 @@ test('bot plays all six nights in one sitting through the real UI and reaches th
     questions += r.stats.questions;
     // never a "come back tomorrow" screen: straight back to camp, ready for the next night
     expect(r.seenScreens).not.toContain('rest');
-    if (n < 6) expect(r.seenScreens.at(-1)).toBe('home');
+    if (n < 6) expect(r.seenScreens.at(-1)).toBe('world');
+    // every night: walked to each marker in turn, the friend appeared only at the end
+    expect(r.seenScreens.filter((x) => x === 'rescue').length).toBeGreaterThan(0);
   }
   await expect(page.locator('[data-screen="dawn"]')).toBeVisible();
   await page.screenshot({ path: 'e2e/screenshots/bot-dawn.png' });
   await page.locator('[data-action="dawn-home"]').tap();
-  await expect(page.locator('[data-action="dawn"]')).toBeVisible();
+  await expect(page.locator('[data-quest="done"]')).toBeVisible();
 
   const save = await readSave(page);
   for (let n = 1; n <= 6; n++) expect(save.nights[n].finished).toBe(true);
@@ -45,5 +47,24 @@ test('bot plays all six nights in one sitting through the real UI and reaches th
   for (const t of ['fields', 'grid', 'column']) expect([...types], t).toContain(t);
   expect(types.size).toBeGreaterThanOrEqual(8);
   console.log('interaction types used:', [...types].join(', '));
+  expect(errors).toEqual([]);
+});
+
+test('2D fallback (no WebGL): bot plays all six nights and reaches the Dawn', async ({ page }) => {
+  test.setTimeout(40 * 60_000);
+  setTouch(true);
+  const errors: string[] = [];
+  page.on('pageerror', (e) => errors.push(String(e)));
+  await page.goto('./?bot=1&2d=1');
+  await openGame(page);
+  for (let n = 1; n <= 6; n++) {
+    await expect(page.locator('[data-tonight]')).toHaveAttribute('data-tonight', String(n));
+    await page.locator('[data-action="start"]').tap();
+    const r = await playUntil(page, (s) => s === 'home' || s === 'dawn');
+    expect(r.seenScreens).toContain('campfire');
+  }
+  await expect(page.locator('[data-screen="dawn"]')).toBeVisible();
+  const save = await readSave(page);
+  for (let n = 1; n <= 6; n++) expect(save.nights[n].finished).toBe(true);
   expect(errors).toEqual([]);
 });

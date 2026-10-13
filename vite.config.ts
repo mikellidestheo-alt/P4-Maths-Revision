@@ -43,6 +43,7 @@ export default defineConfig({
     target: 'es2019',
     sourcemap: false,
     assetsInlineLimit: 0,
+    chunkSizeWarningLimit: 900,
   },
   plugins: [serviceWorker()],
   test: {

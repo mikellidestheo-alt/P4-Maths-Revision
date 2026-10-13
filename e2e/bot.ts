@@ -268,14 +268,25 @@ export async function screen(page: Page): Promise<string> {
 
 /** The game opens straight on the camp (there is no setup screen). */
 export async function openGame(page: Page) {
-  await page.waitForSelector('[data-screen="home"]');
+  await page.waitForSelector('[data-screen="home"], [data-screen="world"]');
+}
+
+/** In the 3D world: walk to the marker with the real "Walk to marker" button, then press "Start". */
+export async function walkAndInteract(page: Page) {
+  const act = page.locator('[data-action="interact"]');
+  if (!(await act.isVisible())) {
+    const walk = page.locator('[data-action="autowalk"]');
+    if ((await walk.getAttribute('aria-pressed')) !== 'true') await tap(walk);
+    await expect(act).toBeVisible({ timeout: 90_000 });
+  }
+  await tap(act);
 }
 
 /**
  * Play from the current screen until `stopAt` is reached. `wrongPlan(i)` says how many wrong tries
  * to make on the i-th question overall. Returns counts for assertions.
  */
-export async function playUntil(page: Page, stopAt: (s: string) => boolean, wrongPlan: (i: number, inf: Info) => 0 | 1 | 2 = () => 0, maxSteps = 2000) {
+export async function playUntil(page: Page, stopAt: (s: string) => boolean | Promise<boolean>, wrongPlan: (i: number, inf: Info) => 0 | 1 | 2 = () => 0, maxSteps = 2000) {
   let q = 0;
   const seenScreens: string[] = [];
   const stats = { questions: 0, recap: 0, wrongTwice: 0, wrongOnce: 0, types: new Set<string>(), recapKinds: [] as string[], missedKinds: [] as string[] };
@@ -283,7 +294,7 @@ export async function playUntil(page: Page, stopAt: (s: string) => boolean, wron
     await page.waitForTimeout(20);
     const s = await screen(page);
     seenScreens.push(s);
-    if (stopAt(s)) return { stats, seenScreens };
+    if (await stopAt(s)) return { stats, seenScreens };
     switch (s) {
       case 'home': {
         const start = page.locator('[data-action="start"]');
@@ -291,6 +302,9 @@ export async function playUntil(page: Page, stopAt: (s: string) => boolean, wron
         else throw new Error('home: no start button');
         break;
       }
+      case 'world':
+        await walkAndInteract(page);
+        break;
       case 'night': {
         const fire = page.locator('[data-action="campfire"]');
         if (await fire.isEnabled()) {

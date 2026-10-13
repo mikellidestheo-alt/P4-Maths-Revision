@@ -124,6 +124,12 @@ export function recordRecapAnswer(d: SaveData, q: Question, o: AnswerOutcome): n
   return coins;
 }
 
+/** Once all of tonight's jobs are done, fix the Campfire recap list (may be empty). */
+export function prepareRecap(run: NightRun) {
+  const def = NIGHTS[run.night - 1];
+  if (!run.recap && def.jobs.every((j) => run.jobs[j]?.done)) run.recap = { queue: buildRecapQueue(run), index: 0, fixed: 0 };
+}
+
 /** Up to PLAN.maxRecap distinct missed skills, most recent first. */
 export function buildRecapQueue(run: NightRun): MissEntry[] {
   const seen = new Set<string>();

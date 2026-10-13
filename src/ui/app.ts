@@ -15,6 +15,10 @@ export class App {
   root: HTMLElement;
   current: Screen | null = null;
   debug: boolean;
+  /** true when the 3D world is in use (WebGL available) */
+  world3d = false;
+  /** the 3D world, created once and kept alive between screens */
+  world: unknown = null;
 
   constructor(root: HTMLElement) {
     this.root = root;

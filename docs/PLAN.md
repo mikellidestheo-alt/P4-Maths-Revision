@@ -25,6 +25,7 @@ time by a tiny Vite plugin) gives offline play and clean updates.
 - [x] M7 Shop, audio, a11y, offline/update, full QA, docs
 - [x] Follow-up: grown-ups/parent area removed at the owner's request (save schema v2)
 - [x] Follow-up: daily night limit and rest screen removed at the owner's request (save schema v3)
+- [x] Follow-up: 3D third-person forest world with quest markers (Three.js), 2D fallback, dark forest backdrop behind tasks
 
 Note: because the whole game was built in one autonomous session, the
 milestones were developed in order on one branch and verified together;

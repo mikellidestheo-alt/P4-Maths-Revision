@@ -534,3 +534,46 @@ svg { display: block; }
 .scene-dawn { --sky-top: #3b4a9a; --sky-mid: #e58fa0; --sky-low: #ffc98a; --hill-far: #6a4f8a; --hill-near: #3d4f6a; --ground: #3c5a46; }
 /* drawn marks never block taps on the grid dots underneath (the grid works out the nearest dot) */
 .user-tri, .user-seg, .user-dot, .user-cell, .fixed-dot, .grid-ghost, .grid-cursor, .grid-reveal { pointer-events: none; }
+
+/* ---------- dark forest scene behind the 2D task screens ---------- */
+.q-screen, .job-done-screen, .rescue, .checkin, .shop, .friends {
+  background: var(--forest-bg) center bottom / cover no-repeat, #0b0f26;
+}
+.q-screen .q-header, .shop .topbar, .friends .topbar { background: rgba(8, 10, 28, 0.7); backdrop-filter: blur(3px); -webkit-backdrop-filter: blur(3px); }
+.q-screen .q-footer { background: rgba(26, 22, 64, 0.92); }
+.q-screen .q-body { background: linear-gradient(rgba(8, 10, 28, 0.35), rgba(8, 10, 28, 0)); }
+
+/* ---------- 3D world screen ---------- */
+.world-screen { position: relative; height: 100vh; height: 100dvh; min-height: 0; overflow: hidden; padding: 0; background: #17143a; }
+.world-stage, .world-canvas, .world-canvas canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; }
+.world-canvas canvas { touch-action: none; }
+.world-hud { position: absolute; inset: 0; pointer-events: none; display: flex; flex-direction: column;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left); }
+.world-hud > *, .world-hud button, .world-hud .joystick, .world-hud .quest-card, .world-hud .world-tip, .world-hud .install-hint { pointer-events: auto; }
+.world-hud .topbar { background: linear-gradient(rgba(8, 8, 28, 0.75), rgba(8, 8, 28, 0)); position: static; }
+.world-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 8px; padding: 0 12px; pointer-events: none !important; }
+.quest-card { background: rgba(14, 12, 40, 0.82); border: 2px solid rgba(255, 209, 102, 0.6); border-radius: 14px; padding: 8px 12px; display: flex; flex-direction: column; gap: 2px; max-width: min(420px, calc(100vw - 90px)); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35); }
+.quest-card strong { color: var(--gold); font-size: 0.98rem; }
+.quest-card span { font-size: 0.95rem; }
+.quest-dist { color: var(--muted); font-size: 0.85rem !important; }
+.world-side { display: flex; flex-direction: column; gap: 8px; pointer-events: none !important; align-items: flex-end; }
+.world-side-btn { background: rgba(14, 12, 40, 0.8); border: 2px solid rgba(255, 255, 255, 0.2); width: 48px; height: 48px; }
+.world-tip { margin: 8px 12px 0; align-self: flex-start; max-width: min(460px, calc(100vw - 24px)); background: #fff7e6; color: #2a1e10; border-radius: 14px; padding: 8px 12px; font-size: 0.95rem; transition: opacity 0.6s; }
+.tip-who { font-weight: 800; color: #3f7d5a; }
+.world-tip.tip-hide, .world-tip.tip-quiet { opacity: 0; pointer-events: none !important; }
+.world-warn { margin: 8px 12px 0; align-self: flex-start; }
+.world-hud .install-hint { margin: 8px 12px 0; align-self: flex-start; }
+.world-bottom { margin-top: auto; display: flex; align-items: flex-end; justify-content: space-between; gap: 10px; padding: 12px 14px calc(14px + env(safe-area-inset-bottom)); pointer-events: none !important; }
+.joystick { width: 128px; height: 128px; border-radius: 50%; background: rgba(255, 255, 255, 0.12); border: 3px solid rgba(255, 255, 255, 0.35); position: relative; touch-action: none; flex: none; }
+.joy-knob { position: absolute; left: 50%; top: 50%; width: 56px; height: 56px; margin: -28px 0 0 -28px; border-radius: 50%; background: rgba(255, 209, 102, 0.85); border: 3px solid #fff3c4; pointer-events: none; }
+.key-hint { background: rgba(14, 12, 40, 0.75); border-radius: 10px; padding: 6px 10px; font-size: 0.85rem; color: var(--muted); max-width: 46vw; }
+.world-actions { display: flex; flex-direction: column; align-items: flex-end; gap: 10px; }
+.btn-walk { background: rgba(14, 12, 40, 0.85); min-height: 54px; font-size: 1.05rem; }
+.btn-walk[aria-pressed='true'] { border-color: var(--gold); }
+.btn-act { min-height: 60px; font-size: 1.15rem; max-width: min(320px, 60vw); animation: actglow 1.6s ease-in-out infinite; }
+@keyframes actglow { 0%, 100% { box-shadow: 0 0 10px rgba(255, 173, 71, 0.4); } 50% { box-shadow: 0 0 28px rgba(255, 209, 102, 0.95); } }
+@media (max-height: 480px) {
+  .joystick { width: 104px; height: 104px; }
+  .world-tip { display: none; }
+  .quest-card { padding: 4px 10px; }
+}

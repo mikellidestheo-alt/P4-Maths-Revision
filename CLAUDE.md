@@ -30,11 +30,15 @@ no backend, no analytics. UK English, age 8–9 reading level, cosy (never scary
   and/or arrow buttons, and questions provide a typed `fallback` where the maths allows.
 - `src/ui/screens/runner.ts` — the question flow (check, hint, retry, worked solution, coins).
 - `src/game/progress.ts` — unlocking (story order), scoring, history, recap queue, review weighting.
+- `src/world/` — the 3D world (Three.js, the only runtime dependency). `layout.ts` (paths, task/fire/friend
+  spots, seeded trees, auto-walk routes) and `quest.ts` (what the marker points at) are pure and unit-tested;
+  `models.ts` builds blocky meshes; `world.ts` is the renderer/player/camera, kept alive between screens.
+  `src/ui/screens/world.ts` is the HUD and falls back to the 2D camp when WebGL is missing (`?2d=1` forces it).
 - `src/storage/save.ts` — versioned schema (`SCHEMA_VERSION`) + `migrate()`; bump the version and
   add a migration step for any breaking change. All storage access is try/catch.
 
 ## Testing hooks
-- Add `?bot=1` to the URL to expose `window.__camp` (current question, expected answer, a
+- Add `?bot=1` to the URL to expose `window.__campWorld` (3D: `pos`, `teleport(x,z)`, `state.objective`), `window.__camp` (current question, expected answer, a
   guaranteed-wrong answer) and `window.__campPreview(topicId, kind, tier, seed)`.
 - `e2e/bot.ts` drives every widget through the real UI. If you add an interaction type, teach the bot.
 - Stable selectors: `data-screen`, `data-action`, `data-field-id`, `data-key`, `data-tile`,

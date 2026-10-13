@@ -5,7 +5,7 @@ import { campScene, friendSvg, jobIcon, moonIcon, wrenSvg } from '../art';
 import { FRIENDS, JOB_BLURB, JOB_ICON, NIGHTS, friendOf, jobDef } from '../../game/nights';
 import {
   allFinished, applyCheckin, buildRecapQueue, canStart, finishNight, isFinished, isUnlocked, nextNight,
-  noteQuestionShown, recordJobAnswer, recordRecapAnswer, reviewWeights, startNight, type NightSummary,
+  noteQuestionShown, prepareRecap, recordJobAnswer, recordRecapAnswer, reviewWeights, startNight, type NightSummary,
 } from '../../game/progress';
 import { nextQuestion, recapQuestion, QUESTIONS_PER_JOB } from '../../engine/planner';
 import { runnerScreen } from './runner';
@@ -19,7 +19,7 @@ export function speech(text: string, outfit?: string): HTMLElement {
   return h('div', { class: 'speech' }, h('div', { class: 'speech-wren' }, wrenSvg(outfit)), h('p', { class: 'bubble' }, text));
 }
 
-function topBar(app: App, opts: { back?: () => void; title?: string } = {}): HTMLElement {
+export function topBar(app: App, opts: { back?: () => void; title?: string } = {}): HTMLElement {
   const d = app.data;
   const moons = h('nav', { class: 'moons', 'aria-label': 'Six nights' },
     ...NIGHTS.map((n) => {
@@ -65,7 +65,7 @@ function confirmReplay(app: App, n: number) {
   ]);
 }
 
-function tryStart(app: App, n: number) {
+export function tryStart(app: App, n: number) {
   const d = app.data;
   if (d.current && d.current.night !== n) {
     modal(app, `You’re in the middle of Night ${d.current.night}. Let’s finish that first!`, [{ label: `Go to Night ${d.current.night}`, primary: true, act: () => nav.night(app, d.current!.night) }]);
@@ -240,6 +240,7 @@ export function jobScreen(app: App, jobId: string): Screen {
     },
     onFinish: () => {
       st().done = true;
+      prepareRecap(d.current!);
       app.save();
       jobDone(app, jobId);
     },
@@ -254,7 +255,7 @@ function jobDone(app: App, jobId: string) {
   const st = run.jobs[jobId];
   const firsts = st.firstTry.filter(Boolean).length;
   const job = jobDef(jobId);
-  const back = h('button', { type: 'button', class: 'btn btn-primary btn-big', 'data-action': 'job-back' }, 'Back to camp');
+  const back = h('button', { type: 'button', class: 'btn btn-primary btn-big', 'data-action': 'job-back' }, app.world3d ? 'Back to the forest' : 'Back to camp');
   back.addEventListener('click', () => nav.night(app, run.night));
   play('coin');
   const el = h('div', { class: 'screen job-done-screen', 'data-screen': 'job-done' },
@@ -263,7 +264,8 @@ function jobDone(app: App, jobId: string) {
       h('h1', {}, 'Job done!'),
       h('p', {}, `${job.job}: ${firsts} out of 10 right first time.`),
       speech(firsts >= 8 ? 'Amazing work! The camp is looking great.' : firsts >= 5 ? 'Good job! Every question makes you stronger.' : 'You kept going — that’s what real campers do! Tricky ones will come back at the campfire.', d.equipped.outfit),
-      back));
+      back,
+      installHint(app)));
   app.show({ el, title: 'Job done', onBack: () => nav.night(app, run.night) });
 }
 
@@ -315,7 +317,8 @@ export function recapScreen(app: App): Screen {
     onFinish: () => {
       run.stage = 'rescue';
       app.save();
-      nav.rescue(app);
+      if (app.world3d) nav.night(app, run.night);
+      else nav.rescue(app);
     },
     onExit: () => nav.campfire(app),
   });

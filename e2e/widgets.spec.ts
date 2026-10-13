@@ -113,7 +113,7 @@ test('physical keyboard works for typed answers (laptop)', async ({ page }, ti) 
   await page.keyboard.press('Enter');
   await expect(page.locator('.banner')).toHaveClass(/banner-good/);
   await page.keyboard.press('Enter'); // Next
-  await expect(page.locator('[data-screen="home"]')).toBeVisible();
+  await expect(page.locator('[data-screen="world"]')).toBeVisible();
   // time with a colon, typed on the keyboard, then am/pm by clicking
   await preview(page, '1.6', 'swap', 2, 11);
   const t = await info(page);

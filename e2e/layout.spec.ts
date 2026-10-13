@@ -72,11 +72,22 @@ test('screens and every interaction fit this viewport', async ({ page }, testInf
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(String(e)));
   await page.goto('./?bot=1');
-  await page.waitForSelector('[data-screen="home"]');
-  await check(page, 'home', P);
-  await page.click('[data-action="start"]');
-  await page.waitForSelector('[data-screen="night"]');
-  await check(page, 'night', P);
+  await page.waitForSelector('[data-screen="world"]');
+  await page.waitForTimeout(800);
+  await check(page, 'world', P);
+  // HUD: quest card, walk button and joystick all on screen, and not on top of each other
+  const vh = await page.evaluate(() => window.innerHeight), vw = await page.evaluate(() => window.innerWidth);
+  for (const sel of ['[data-quest]', '[data-action="autowalk"]']) {
+    const b = (await page.locator(sel).boundingBox())!;
+    expect(b.y + b.height, `${sel} inside`).toBeLessThanOrEqual(vh + 1);
+    expect(b.x + b.width, `${sel} inside`).toBeLessThanOrEqual(vw + 1);
+  }
+  const qb = (await page.locator('[data-quest]').boundingBox())!, wb = (await page.locator('[data-action="autowalk"]').boundingBox())!;
+  expect(qb.y + qb.height).toBeLessThan(wb.y);
+  if (await page.locator('.joystick').count()) {
+    const jb = (await page.locator('.joystick').boundingBox())!;
+    expect(jb.x + jb.width, 'joystick and walk button apart').toBeLessThan(wb.x);
+  }
 
   for (const [topic, kind, tier, label] of PREVIEWS) {
     await page.evaluate(([t, k, tr]) => (window as any).__campPreview(t, k, tr, 3), [topic, kind, tier] as const);
@@ -113,14 +124,25 @@ test('screens and every interaction fit this viewport', async ({ page }, testInf
   }
 
   await page.evaluate(() => (window as any).__campApp && document.querySelector<HTMLButtonElement>('[data-action="exit"]')?.click());
-  await page.waitForSelector('[data-screen="home"]');
+  await page.waitForSelector('[data-screen="world"]');
   await page.click('[data-action="shop"]');
   await page.waitForSelector('[data-screen="shop"]');
   await check(page, 'shop', P);
   await page.click('[data-action="back"]');
+  await page.waitForSelector('[data-screen="world"]');
   await page.click('[data-action="friends"]');
   await page.waitForSelector('[data-screen="friends"]');
   await check(page, 'friends', P);
   await page.click('[data-action="back"]');
   expect(errors).toEqual([]);
+});
+
+test('2D fallback screens fit this viewport', async ({ page }, testInfo) => {
+  const P = testInfo.project.name;
+  await page.goto('./?bot=1&2d=1');
+  await page.waitForSelector('[data-screen="home"]');
+  await check(page, '2d-home', P);
+  await page.click('[data-action="start"]');
+  await page.waitForSelector('[data-screen="night"]');
+  await check(page, '2d-night', P);
 });

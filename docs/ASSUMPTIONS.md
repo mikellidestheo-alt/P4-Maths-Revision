@@ -21,6 +21,24 @@ age 9–10 ("Stage 5 / P5"). Every range below is in `src/config/difficulty.ts` 
 | 2.7 Reflection | Tap the reflected corners of a shape; reflect a point in x = k / y = k | Horizontal/vertical mirrors only (diagonals out of scope). Tier 1–2 shapes are 1–2 squares from the mirror; tier 3 uses labelled lines like x = 5 and bigger gaps. |
 | Reviews | Unit 1 review (Night 3), Unit 2 review + Final mixed (Night 6) | Mixed topics, weighted towards weaker topics, max 2 per topic per review. |
 
+## 3D world decisions
+- **Three.js** renders the world (bundled, works offline; ~200 KB gzipped for the whole game). Blocky,
+  low-poly, original models: the camper, Wren, the six friends, trees, tent, campfire, lanterns.
+- **Map:** the camp in the middle; six straight forest paths (one per night) lead out to each friend's
+  landmark (Bramble Thicket, Old Clock Tree, signposts, Misty Meadow flowers, Lantern Glade, Mirror Cave).
+  Trees never grow on paths or in camp, so the camper can't get stuck there.
+- **Quest order each night:** Task 1 → Task 2 → Task 3 → campfire (only if something needs fixing) →
+  the friend. Tasks are done in this fixed order in 3D (the 2D fallback still lets her pick any order).
+  Only the current task's plinth is shown; finished ones show a green block. The friend appears at the
+  end of the path only when everything before it is done.
+- **The Campfire recap** happens at a campfire spot near the end of the path ("light the campfire before
+  the last stretch") rather than back at camp, so every step moves her closer to the friend.
+- **Rescued friends** then live round the camp fire. After Night 6 the world changes to dawn lighting.
+- **Controls:** joystick on touch screens, WASD/arrows on keyboards, drag to look, mouse wheel to zoom.
+  "Walk to marker" auto-walks along the paths (and the camera turns to follow).
+- **Shop items** appear in 3D: lantern colour, decorations round the camp, Wren's hats, friends' accessories.
+- **Fallback:** if WebGL isn't available (or `?2d=1`), the original 2D camp screens are used.
+
 ## Game decisions
 - **Multiple choice** = picking one answer from a short list (1.3 `< > =`, 1.7 "parallel / perpendicular / neither", 2.5 "which type of triangle?"). Capped at 2 per 10-question job and 1 per review → about 2% overall in simulation of 200 full playthroughs (unit test asserts < 10%). Tapping lines in a picture and sorting cards into groups are counted as *interactive*, not multiple choice.
 - **Night plan:** 10 questions per job, tiers 1,1,1,1,2,2,2,2,3,3. 2 wrong in a row → next one a tier easier; 3 right in a row → a tier harder. The end-of-night question "Was the maths too easy / just right / too hard?" moves later nights one step (±1 max).

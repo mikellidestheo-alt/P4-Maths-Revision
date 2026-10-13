@@ -5,10 +5,14 @@ import { h } from './ui/dom';
 import { makeRng } from './engine/rng';
 import { runnerScreen } from './ui/screens/runner';
 import { TOPICS } from './topics';
+import { forestBackdropUrl } from './ui/backdrop';
+import { preloadIcons } from './ui/worldIcons';
 
 declare const __BUILD_ID__: string;
 
 function boot() {
+  document.documentElement.style.setProperty('--forest-bg', forestBackdropUrl());
+  void preloadIcons();
   const root = document.getElementById('app')!;
   let app: App;
   try {
