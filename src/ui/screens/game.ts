@@ -4,8 +4,8 @@ import { nav } from '../nav';
 import { campScene, friendSvg, jobIcon, moonIcon, wrenSvg } from '../art';
 import { FRIENDS, JOB_BLURB, JOB_ICON, NIGHTS, friendOf, jobDef } from '../../game/nights';
 import {
-  allFinished, applyCheckin, buildRecapQueue, campAsleep, canStart, finishNight, isFinished, isUnlocked, nextNight,
-  noteQuestionShown, recordJobAnswer, recordRecapAnswer, reviewWeights, startNight, allowanceLeft, type NightSummary,
+  allFinished, applyCheckin, buildRecapQueue, canStart, finishNight, isFinished, isUnlocked, nextNight,
+  noteQuestionShown, recordJobAnswer, recordRecapAnswer, reviewWeights, startNight, type NightSummary,
 } from '../../game/progress';
 import { nextQuestion, recapQuestion, QUESTIONS_PER_JOB } from '../../engine/planner';
 import { runnerScreen } from './runner';
@@ -25,7 +25,7 @@ function topBar(app: App, opts: { back?: () => void; title?: string } = {}): HTM
     ...NIGHTS.map((n) => {
       const done = isFinished(d, n.n);
       const isNext = nextNight(d) === n.n || (!done && isUnlocked(d, n.n));
-      const state = done ? 'done' : isNext ? (allowanceLeft(d) <= 0 && d.current?.night !== n.n ? 'sleep' : 'next') : 'locked';
+      const state = done ? 'done' : isNext ? 'next' : 'locked';
       const stars = d.nights[n.n]?.bestStars ?? 0;
       const label = `Night ${n.n}: ${done ? `finished, ${stars} star${stars === 1 ? '' : 's'}${opts.back ? '' : ' — tap to replay'}` : isNext ? 'open — tap to play' : 'not yet'}`;
       const b = h('button', { type: 'button', class: `moon-btn moon-${state}`, 'data-moon': String(n.n), 'aria-label': label, disabled: !done && !(isNext && !opts.back) },
@@ -71,11 +71,7 @@ function tryStart(app: App, n: number) {
     modal(app, `You’re in the middle of Night ${d.current.night}. Let’s finish that first!`, [{ label: `Go to Night ${d.current.night}`, primary: true, act: () => nav.night(app, d.current!.night) }]);
     return;
   }
-  const c = canStart(d, n);
-  if (!c.ok) {
-    if (c.reason === 'sleep') nav.rest(app);
-    return;
-  }
+  if (!canStart(d, n).ok) return;
   startNight(d, n);
   app.save();
   play('tap');
@@ -107,10 +103,8 @@ export function homeScreen(app: App): Screen {
     app.save();
   }
   const n = nextNight(d);
-  const asleep = campAsleep(d);
   const friendsRescued = NIGHTS.filter((x) => isFinished(d, x.n)).map((x) => x.friend);
   const scene = h('div', { class: 'scene-wrap' }, campScene({ spook: GAME.spook, decor: app.decor(), outfit: d.equipped.outfit, friends: friendsRescued, friendAccessory: d.equipped.friends }));
-  if (asleep) scene.classList.add('asleep');
   let message: string;
   const actions = h('div', { class: 'home-actions' });
   if (n === null) {
@@ -124,9 +118,6 @@ export function homeScreen(app: App): Screen {
     const go = h('button', { type: 'button', class: 'btn btn-primary btn-big', 'data-action': 'start' }, `Continue Night ${n} of 6`);
     go.addEventListener('click', () => nav.night(app, n));
     actions.appendChild(go);
-  } else if (asleep) {
-    message = `The camp is fast asleep. Zzz… Come back tomorrow for Night ${n}! You can still replay a night or visit the shop.`;
-    actions.appendChild(h('p', { class: 'sleep-note' }, `🌙 Tonight: done. Night ${n} opens tomorrow.`));
   } else {
     const f = friendOf(n);
     message = n === 1
@@ -146,8 +137,6 @@ export function homeScreen(app: App): Screen {
   shop.addEventListener('click', () => nav.shop(app));
   const friends = h('button', { type: 'button', class: 'btn', 'data-action': 'friends' }, '🦔 Friends');
   friends.addEventListener('click', () => nav.friends(app));
-  const left = allowanceLeft(d);
-  const pace = left === Infinity || n === null || asleep ? '' : `Nights left today: ${left}`;
   const el = h('div', { class: 'screen home', 'data-screen': 'home' },
     topBar(app),
     h('main', { class: 'home-main' },
@@ -158,7 +147,6 @@ export function homeScreen(app: App): Screen {
         speech(message, d.equipped.outfit),
         actions,
         h('div', { class: 'home-secondary' }, shop, friends),
-        pace ? h('p', { class: 'pace-note' }, pace) : null,
         !app.store.persistent ? h('p', { class: 'warn-note', role: 'note' }, '⚠️ This browser isn’t letting the game save. Progress will be lost when you close it. (Private browsing? Try a normal window.)') : null,
         installHint(app),
       )),
@@ -333,7 +321,7 @@ export function recapScreen(app: App): Screen {
   });
 }
 
-/* ---------- rescue, check-in, rest, dawn ---------- */
+/* ---------- rescue, check-in, dawn ---------- */
 
 export function rescueScreen(app: App): Screen {
   const d = app.data;
@@ -376,7 +364,6 @@ export function checkinScreen(app: App, summary: NightSummary): Screen {
     applyCheckin(d, level);
     app.save();
     if (summary.night === 6 && allFinished(d) && !d.flags.dawnSeen) nav.dawn(app);
-    else if (campAsleep(d)) nav.rest(app);
     else nav.home(app);
   });
   const el = h('div', { class: 'screen checkin', 'data-screen': 'checkin' },
@@ -386,23 +373,6 @@ export function checkinScreen(app: App, summary: NightSummary): Screen {
       group('Was the maths', [{ v: 'easy', t: 'Too easy' }, { v: 'right', t: 'Just right' }, { v: 'hard', t: 'Too hard' }], (v) => (level = v as typeof level), 'data-level'),
       done));
   return { el, title: 'Check-in' };
-}
-
-export function restScreen(app: App): Screen {
-  const d = app.data;
-  const n = nextNight(d);
-  const back = h('button', { type: 'button', class: 'btn btn-primary btn-big', 'data-action': 'rest-home' }, 'Back to camp');
-  back.addEventListener('click', () => nav.home(app));
-  const el = h('div', { class: 'screen rest', 'data-screen': 'rest' },
-    h('main', { class: 'campfire-main' },
-      h('div', { class: 'scene-wrap asleep' }, campScene({ spook: 'cosy', decor: app.decor(), outfit: d.equipped.outfit, showWren: false }), h('div', { class: 'zzz', 'aria-hidden': 'true' }, 'Z z z')),
-      h('div', { class: 'night-panel' },
-        h('h1', {}, 'The camp is asleep'),
-        speech(`Great work today! Brains grow while we sleep. Come back tomorrow for Night ${n ?? ''}.`, d.equipped.outfit),
-        h('p', { class: 'small-help' }, 'You can still replay finished nights, or visit the shop.'),
-        back)),
-  );
-  return { el, title: 'Goodnight', onBack: () => nav.home(app) };
 }
 
 export function dawnScreen(app: App): Screen {

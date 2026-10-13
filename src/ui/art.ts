@@ -375,7 +375,7 @@ export function jobIcon(kind: string): SVGSVGElement {
   return svg;
 }
 
-export function moonIcon(state: 'locked' | 'next' | 'done' | 'sleep', n: number): SVGSVGElement {
+export function moonIcon(state: 'locked' | 'next' | 'done', n: number): SVGSVGElement {
   const svg = svgRoot('-20 -20 40 40', { class: `moon moon-${state}`, 'aria-hidden': 'true' });
   if (state === 'done') svg.append(s('circle', { r: 16, class: 'moon-full' }));
   else if (state === 'next') svg.append(s('circle', { r: 16, class: 'moon-ring' }), s('path', { d: 'M 0 -16 A 16 16 0 0 1 0 16 A 9 16 0 0 0 0 -16', class: 'moon-half' }));

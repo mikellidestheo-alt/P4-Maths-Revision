@@ -1,11 +1,10 @@
 /**
- * Game rules that used to be grown-up settings. Change here and redeploy.
+ * Game settings that are fixed in code. Change here and redeploy.
+ * (There is no daily limit on nights: she can play as many as she likes.)
  */
 export type Spook = 'cosy' | 'mild' | 'spooky';
 
 export const GAME = {
-  /** New nights that can be finished per calendar day (replays never count). 0 = no limit. */
-  nightsPerDay: 3,
   /** Cosy: gentle mist, one pair of friendly eyes. Mild / spooky: more mist and eyes (never scary). */
   spook: 'cosy' as Spook,
 };

@@ -288,7 +288,7 @@ export async function playUntil(page: Page, stopAt: (s: string) => boolean, wron
       case 'home': {
         const start = page.locator('[data-action="start"]');
         if (await start.count()) await tap(start);
-        else throw new Error('home: no start button (camp asleep?)');
+        else throw new Error('home: no start button');
         break;
       }
       case 'night': {
@@ -333,7 +333,6 @@ export async function playUntil(page: Page, stopAt: (s: string) => boolean, wron
         await tap(page.locator('[data-level="right"]'));
         await tap(page.locator('[data-action="goodnight"]'));
         break;
-      case 'rest':
       case 'dawn':
         throw new Error(`unexpected screen ${s}`);
       default:

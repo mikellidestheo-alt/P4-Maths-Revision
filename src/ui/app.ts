@@ -2,7 +2,6 @@ import { openStore, type Store } from '../storage/save';
 import { makeRng, randomSeed, type Rng } from '../engine/rng';
 import { clear } from './dom';
 import { setSoundEnabled, unlockAudio } from '../game/audio';
-import { refreshDaily } from '../game/progress';
 import { itemById } from '../game/shop';
 import { GAME } from '../config/game';
 
@@ -20,10 +19,9 @@ export class App {
   constructor(root: HTMLElement) {
     this.root = root;
     this.store = openStore();
+    this.store.save(); // write back any migrated save straight away
     this.rng = makeRng(randomSeed());
     this.debug = /[?&]bot=1/.test(location.search);
-    refreshDaily(this.store.data);
-    this.store.save();
     this.applySettings();
     // first gesture unlocks audio (iOS needs this)
     const unlock = () => unlockAudio();

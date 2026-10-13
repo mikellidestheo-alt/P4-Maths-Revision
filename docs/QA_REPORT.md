@@ -12,17 +12,18 @@ Playwright 1.56). Nobody has played it on a real phone yet — see "Not verified
 | Bot plays the whole game through the real UI (6 nights, 180 job questions + recaps) to the Dawn | ✅ pass (repeated with fresh random questions — see below) |
 | Bot "wrong answers" variant: retry → hint, worked solution, review marking, Campfire recap, rescue | ✅ pass |
 | Viewport matrix (6 sizes) — every screen and every interaction type | ✅ pass |
-| Pacing with a mocked clock (3 new nights a day, replays free, next day resets) | ✅ pass |
+| No night limit (six nights in one sitting), story order, replays | ✅ pass |
 | Storage blocked, corrupted save, old-schema migration (v1 → v2), mid-night resume | ✅ pass |
 | Real touch drags (Chrome touch emulation), typed fallbacks, arrow-button fallback, laptop keyboard | ✅ pass |
 | Offline after first visit; new deploy picked up; old caches removed; offline then serves the new build | ✅ pass |
 | WebKit (Safari engine) | ⚠️ not run — WebKit is not installed in this environment (see below) |
 
-## Update — grown-ups area removed
+## Update — grown-ups area and night limits removed
 At the owner's request the whole parent mode was removed (first-run setup, PIN gate, grown-ups area,
-nickname, settings, progress codes, parent unlock/reset, "How was tonight?"). Nights per day (3) and
-spookiness (Cosy) are now fixed in `src/config/game.ts`. The save schema moved to v2 with a migration
-that keeps existing progress. All unit and end-to-end tests were updated and re-run after the change
+nickname, settings, progress codes, parent unlock/reset, "How was tonight?"). Spookiness (Cosy) is
+fixed in `src/config/game.ts`. Then **all night limits were removed** (no daily allowance, no "camp is
+asleep" rest screen); nights still open in story order. The save schema moved to v3 with migrations
+that keep existing progress. All unit and end-to-end tests were updated and re-run after the change
 (results below reflect the current build).
 
 ## Deployment status
@@ -85,8 +86,8 @@ UI**: tapping the number pad, dragging digit tiles and the number-line lantern (
 alternate questions), using the order arrows, clock buttons, grid dots, triangle corner drags, column
 boxes, sorting cards (drag and tap), and tapping fold lines.
 
-- Mocked clock: Saturday 17 Oct 2026 09:00. Nights 1–3 → **rest screen** ("camp is asleep"), home has
-  no Start button. Clock moved to Sunday 18 Oct → nights 4–6 → **Dawn** screen.
+- Plays nights 1–6 back to back in one sitting (there is no night limit and never a "come back
+  tomorrow" screen) and reaches the **Dawn** screen.
 - Asserts: all six nights finished with 3 stars, 180 job questions, every topic attempted ≥ 10 times,
   no page errors.
 - Typical run time ≈ 1.5 minutes.
@@ -137,13 +138,12 @@ Screenshots: `e2e/screenshots/<viewport>--<screen>.png` (regenerated on each run
 - Grid point placed with the arrow-button fallback; fence drawn by dragging from the lantern.
 - Laptop: typing digits and Enter on a physical keyboard; Enter for Next; times with a colon.
 
-### Pacing and storage — `e2e/storage.spec.ts`
-First visit opens straight on the camp; there is no grown-ups button. Pacing (3 a day): after three
-new nights the camp sleeps; tonight's moon → rest screen; replaying a finished night is allowed and
-doesn't use the allowance; the next calendar day restores the allowance by itself; with two nights done
-the third can still start. Storage blocked (`localStorage` throws): game plays and the home screen says
+### Unlocking and storage — `e2e/storage.spec.ts`
+First visit opens straight on the camp; there is no grown-ups button. No night limit: with five nights
+finished, Night 6 starts straight away; replays always work. Story order: Night 2 is locked until Night 1
+is finished. Storage blocked (`localStorage` throws): game plays and the home screen says
 progress won't be saved. Corrupted JSON: fresh start, no crash, raw copy kept as a backup key. A v1
-save (with the old PIN/nickname fields) migrates to v2 keeping coins and nights. Closing mid-night:
+save (with the old PIN/nickname fields and daily counter) migrates to v3 keeping coins and nights. Closing mid-night:
 "Continue Night 1", job shows "3/10 done", resumes at question 4.
 
 ### Offline and updates — `e2e/offline.spec.ts`

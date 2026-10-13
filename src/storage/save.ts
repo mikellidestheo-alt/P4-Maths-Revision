@@ -4,10 +4,10 @@
  * still works using memory only, and the home screen says so.
  */
 import type { JobState, MissEntry } from '../engine/planner';
-import { localDate, now } from '../game/clock';
+import { now } from '../game/clock';
 
 export const SAVE_KEY = 'sixNightsCamp.save';
-export const SCHEMA_VERSION = 2;
+export const SCHEMA_VERSION = 3;
 
 export interface Settings {
   sound: boolean;
@@ -64,7 +64,6 @@ export interface SaveData {
   createdAt: string;
   settings: Settings;
   nights: Record<string, NightRecord>;
-  daily: { date: string; newNightsFinished: number };
   current: NightRun | null;
   topics: Record<string, TopicStats>;
   coins: number;
@@ -82,7 +81,6 @@ export function defaultSave(): SaveData {
     createdAt: new Date(now()).toISOString(),
     settings: { sound: true },
     nights: {},
-    daily: { date: localDate(), newNightsFinished: 0 },
     current: null,
     topics: {},
     coins: 0,
@@ -98,6 +96,7 @@ export function defaultSave(): SaveData {
  * Bring any older / partial save up to the current schema without losing progress.
  * v1 → v2: the grown-ups area was removed (PIN, nickname, pacing/spookiness/motion/text settings,
  * parent unlocks and check-in history are dropped; nights, coins, shop items and history are kept).
+ * v2 → v3: the daily night limit was removed (the daily counter is dropped).
  */
 export function migrate(raw: unknown): SaveData {
   const base = defaultSave();
@@ -108,7 +107,6 @@ export function migrate(raw: unknown): SaveData {
     createdAt: typeof r.createdAt === 'string' ? r.createdAt : base.createdAt,
     settings: { sound: typeof r.settings?.sound === 'boolean' ? r.settings.sound : true },
     nights: { ...(r.nights ?? {}) },
-    daily: { ...base.daily, ...(r.daily ?? {}) },
     current: r.current ?? null,
     topics: { ...(r.topics ?? {}) },
     coins: typeof r.coins === 'number' && r.coins >= 0 && Number.isFinite(r.coins) ? r.coins : 0,

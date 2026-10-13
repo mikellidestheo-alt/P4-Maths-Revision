@@ -1,19 +1,13 @@
-/** Game rules that read/modify the save data: unlocking, pacing, scoring, history. */
+/** Game rules that read/modify the save data: unlocking (story order), scoring, history. */
 import { PLAN } from '../config/difficulty';
 import { newJobState, recordResult, noteShown, type MissEntry } from '../engine/planner';
 import type { Question } from '../engine/types';
 import type { MissRecord, NightRun, SaveData, TopicStats } from '../storage/save';
-import { GAME } from '../config/game';
-import { localDate, now } from './clock';
+import { now } from './clock';
 import { NIGHTS } from './nights';
 import { TOPIC_LIST } from '../topics';
 
 export const COINS = { firstTry: 2, secondTry: 1, recapFix: 2, rescue: 10, rescueReplay: 5 };
-
-export function refreshDaily(d: SaveData) {
-  const today = localDate();
-  if (d.daily.date !== today) d.daily = { date: today, newNightsFinished: 0 };
-}
 
 export const isFinished = (d: SaveData, n: number) => !!d.nights[n]?.finished;
 export const allFinished = (d: SaveData) => NIGHTS.every((x) => isFinished(d, x.n));
@@ -28,28 +22,13 @@ export function nextNight(d: SaveData): number | null {
   return null;
 }
 
-export function allowanceLeft(d: SaveData): number {
-  refreshDaily(d);
-  if (GAME.nightsPerDay <= 0) return Infinity;
-  return Math.max(0, GAME.nightsPerDay - d.daily.newNightsFinished);
-}
-
-export type StartCheck = { ok: true; replay: boolean; resume: boolean } | { ok: false; reason: 'locked' | 'sleep' };
+export type StartCheck = { ok: true; replay: boolean; resume: boolean } | { ok: false; reason: 'locked' };
 
 export function canStart(d: SaveData, n: number): StartCheck {
   if (d.current && d.current.night === n) return { ok: true, replay: d.current.replay, resume: true };
   if (isFinished(d, n)) return { ok: true, replay: true, resume: false };
   if (!isUnlocked(d, n)) return { ok: false, reason: 'locked' };
-  if (allowanceLeft(d) <= 0) return { ok: false, reason: 'sleep' };
   return { ok: true, replay: false, resume: false };
-}
-
-/** Is the camp asleep for new nights today? (Replays are always allowed.) */
-export function campAsleep(d: SaveData): boolean {
-  const n = nextNight(d);
-  if (n === null) return false;
-  if (d.current && d.current.night === n) return false;
-  return allowanceLeft(d) <= 0;
 }
 
 export function startNight(d: SaveData, n: number): NightRun {
@@ -179,7 +158,6 @@ export function finishNight(d: SaveData): NightSummary | null {
   const run = d.current;
   if (!run) return null;
   if (run.summary) return run.summary;
-  refreshDaily(d);
   const rec = d.nights[run.night] ?? { finished: false, bestStars: 0, plays: 0 };
   const firstFinish = !rec.finished;
   const stars = starsFor(run.firstTry, run.answered);
@@ -193,7 +171,6 @@ export function finishNight(d: SaveData): NightSummary | null {
     bestStars: Math.max(rec.bestStars, stars),
     plays: rec.plays + 1,
   };
-  if (firstFinish && !run.replay) d.daily.newNightsFinished++;
   const summary: NightSummary = {
     night: run.night, stars, coins: run.coins, firstFinish, firstTry: run.firstTry, answered: run.answered,
     recapFixed: run.recap?.fixed ?? 0, recapTotal: run.recap?.queue.length ?? 0,

@@ -27,9 +27,9 @@ age 9–10 ("Stage 5 / P5"). Every range below is in `src/config/difficulty.ts` 
 - **"To review"** = needed the worked solution (missed twice). Those come back at the Campfire with new numbers (up to 8 distinct skills, same or easier tier). Questions fixed on the second try don't go to the recap (they still count towards which topics the reviews favour).
 - **Stars** per night from first-try accuracy on the 30 job questions: ≥ 90% ★★★, ≥ 70% ★★, otherwise ★.
 - **Coins:** +2 right first time, +1 right second time, +2 for each mistake fixed at the campfire, +10 for a rescue (+5 on replays). The shop has 16 cosmetic items; buying nearly everything takes about the whole game.
-- **Pacing** is fixed at 3 new nights per local calendar date (`src/config/game.ts`). It counts nights *finished* for the first time; a night already started can be finished even if the allowance is reached; replays never count.
+- **No night limit** (owner's request): all six nights can be played in one sitting, with no "camp is asleep / come back tomorrow" screen. Nights still open in story order — each one after the one before is finished — and finished nights can always be replayed.
 - Only one night can be "in progress" at a time (a replay must be finished before another night starts) to keep things simple.
-- **No grown-ups area** (removed at the owner's request): no first-run setup, PIN, nickname, settings, parent report, night unlocking, allowance reset or progress codes. Motion follows the device's reduce-motion setting; text size is the device default.
+- **No grown-ups area** (removed at the owner's request): no first-run setup, PIN, nickname, settings, parent report, night unlocking or progress codes. Motion follows the device's reduce-motion setting; text size is the device default.
 - The guide is "Wren", an original camp ranger. Friends: Bramble (hedgehog), Tock (owl), Juniper (fox), Ember (firefly), Lumi (moth), Ripple (otter) — all original.
 - Spookiness is fixed at **Cosy** (`src/config/game.ts`; "mild"/"spooky" only add mist and friendly blinking eyes). Nothing jumps out.
 - "Drag a mirror line onto a shape" (2.6) is implemented as "tap every fold line" from candidate lines — far more reliable on small touch screens. "Draw a line" (1.7) is drag-from-the-lantern *or* tap the end dot.

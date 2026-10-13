@@ -6,7 +6,7 @@ written addition/subtraction, triangles, symmetry, reflection).
 
 **Play:** https://mikellidestheo-alt.github.io/P4-Maths-Revision/
 
-- Six nights, ~15–20 minutes each. Each night you rescue a lost forest friend.
+- Six nights, ~15–20 minutes each, no daily limit. Each night you rescue a lost forest friend.
 - Each night has three camp "jobs" (one per topic, 10 questions each), then a Campfire recap of the
   questions that were missed (with fresh numbers), then the rescue.
 - Answers are typed on a built-in number pad, dragged, drawn, tapped on a grid or built — not
@@ -24,9 +24,9 @@ written addition/subtraction, triangles, symmetry, reflection).
    screen* / *Install app*). It then works offline.
 3. The only control is the 🔊 sound button at the top.
 
-Pacing: up to **3 new nights a day** (the weekend plan). After that the camp goes to sleep until the
-next calendar day. Finished nights can always be replayed and replays never use up the allowance.
-To change the number of nights per day (or the spookiness), edit **`src/config/game.ts`** and push.
+There is **no limit on nights**: she can play as many as she likes in one go. Nights open in story
+order (Night 2 after Night 1, and so on), and finished nights can always be replayed.
+Spookiness is set in **`src/config/game.ts`**.
 
 ## Developing
 
@@ -72,8 +72,8 @@ src/config/difficulty.ts   every tunable range
 src/engine/                seeded RNG, Question model, answer parsing, planner, geometry
 src/topics/                one generator module per topic (+ tests, spot-check)
 src/ui/                    widgets (number pad, place value, number line, clock, grid, column…), screens, SVG art
-src/config/game.ts         nights per day, spookiness
-src/game/                  nights & friends, pacing/scoring rules, shop, sounds
+src/config/game.ts         spookiness
+src/game/                  nights & friends, unlocking/scoring rules, shop, sounds
 src/storage/save.ts        versioned local save
 src/sw-template.js         service worker (filled in at build time)
 e2e/                       Playwright tests and the playthrough bot

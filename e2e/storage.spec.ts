@@ -23,40 +23,24 @@ test('first visit goes straight to the camp; there is no grown-ups area', async 
   await expect(page.locator('[data-action="sound"]')).toBeVisible();
 });
 
-test('3 new nights a day: the camp sleeps, replays still work, and the next day it wakes up', async ({ page }) => {
-  await page.clock.install({ time: new Date('2026-10-17T10:00:00') });
+test('no night limit: after five nights today, Night 6 can start straight away; replays always work', async ({ page }) => {
   await page.goto('./?bot=1');
   await openGame(page);
-  await inject(page, { nights: { 1: done(), 2: done(), 3: done() }, daily: { date: '2026-10-17', newNightsFinished: 3 } });
-  await expect(page.locator('[data-action="start"]')).toHaveCount(0);
-  await expect(page.locator('.sleep-note')).toBeVisible();
-  await page.screenshot({ path: 'e2e/screenshots/pacing-asleep.png' });
-  // tapping tonight's moon shows the rest screen
-  await page.locator('[data-moon="4"]').click();
-  await expect(page.locator('[data-screen="rest"]')).toBeVisible();
-  await page.locator('[data-action="rest-home"]').click();
-  // replaying a finished night is always allowed and does not use the allowance
+  await inject(page, { nights: { 1: done(), 2: done(), 3: done(), 4: done(), 5: done() } });
+  await expect(page.locator('[data-action="start"]')).toHaveText(/Start Night 6/);
+  await expect(page.locator('.sleep-note, .pace-note')).toHaveCount(0);
   await page.locator('[data-moon="1"]').click();
   await page.locator('[data-modal="Replay Night 1"]').click();
   await expect(page.locator('[data-screen="night"]')).toContainText('(replay)');
-  await page.locator('[data-action="back"]').click();
-  expect((await readSave(page)).daily.newNightsFinished).toBe(3);
-  // the next calendar day brings a fresh allowance on its own
-  await page.evaluate((k) => { const d = JSON.parse(localStorage.getItem(k)!); d.current = null; localStorage.setItem(k, JSON.stringify(d)); }, KEY);
-  await page.clock.setSystemTime(new Date('2026-10-18T07:30:00'));
-  await page.reload();
-  await expect(page.locator('[data-action="start"]')).toHaveText(/Start Night 4/);
-  const save = await readSave(page);
-  expect(save.daily).toEqual({ date: '2026-10-18', newNightsFinished: 0 });
 });
 
-test('fewer than 3 nights today: the next night can still be started', async ({ page }) => {
-  await page.clock.install({ time: new Date('2026-10-17T10:00:00') });
+test('story order still applies: a later night opens when the one before is finished', async ({ page }) => {
   await page.goto('./?bot=1');
   await openGame(page);
-  await inject(page, { nights: { 1: done(), 2: done() }, daily: { date: '2026-10-17', newNightsFinished: 2 } });
-  await expect(page.locator('.pace-note')).toHaveText('Nights left today: 1');
-  await expect(page.locator('[data-action="start"]')).toHaveText(/Start Night 3/);
+  await expect(page.locator('[data-moon="2"]')).toBeDisabled();
+  await inject(page, { nights: { 1: done() } });
+  await expect(page.locator('[data-moon="2"]')).toBeEnabled();
+  await expect(page.locator('[data-moon="3"]')).toBeDisabled();
 });
 
 test('works with storage blocked (private mode) and says progress will not be saved', async ({ page }) => {
@@ -91,7 +75,8 @@ test('a corrupted save does not crash the game; an old save is migrated', async 
   await expect(page.locator('[data-coins]')).toHaveText('12');
   await expect(page.locator('[data-tonight]')).toHaveAttribute('data-tonight', '2');
   const save = await readSave(page);
-  expect(save.schemaVersion).toBe(2);
+  expect(save.schemaVersion).toBe(3);
+  expect(save).not.toHaveProperty('daily');
   expect(save).not.toHaveProperty('pin');
   expect(errors).toEqual([]);
 });

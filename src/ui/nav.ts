@@ -10,7 +10,6 @@ export const nav = {
   recap: (_app: App) => {},
   rescue: (_app: App) => {},
   checkin: (_app: App, _s: NightSummary) => {},
-  rest: (_app: App) => {},
   dawn: (_app: App) => {},
   shop: (_app: App) => {},
   friends: (_app: App) => {},

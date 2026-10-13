@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { defaultSave, migrate, SCHEMA_VERSION } from './save';
 
 describe('save migration', () => {
-  it('v1 saves (with the old grown-ups fields) keep their progress and lose the parent data', () => {
+  it('v1/v2 saves keep their progress and lose the parent data and daily counter', () => {
     const v1 = {
       schemaVersion: 1, setupDone: true, pin: '1234', nickname: 'Robin',
       settings: { pacing: 2, spook: 'mild', sound: false, motion: 'reduce', textSize: 'xl' },
@@ -15,7 +15,7 @@ describe('save migration', () => {
     };
     const d = migrate(v1) as unknown as Record<string, unknown>;
     expect(d.schemaVersion).toBe(SCHEMA_VERSION);
-    for (const gone of ['pin', 'nickname', 'setupDone', 'unlockedByParent', 'checkins']) expect(d, gone).not.toHaveProperty(gone);
+    for (const gone of ['pin', 'nickname', 'setupDone', 'unlockedByParent', 'checkins', 'daily']) expect(d, gone).not.toHaveProperty(gone);
     expect(d.settings).toEqual({ sound: false });
     expect(d.coins).toBe(42);
     expect((d.nights as Record<string, { finished: boolean }>)['1'].finished).toBe(true);
