@@ -70,7 +70,7 @@ function candidateLines(pts: Point[], rng: Rng) {
   for (const p of pts) distractors.unshift(angleOf([p[0] - cx, p[1] - cy]));
   for (const a of distractors) {
     if (cands.length >= Math.max(4, trueAngles.length + 1) || cands.length >= 6) break;
-    if (cands.some((c) => Math.abs(c.angle - a) < 8 || Math.abs(Math.abs(c.angle - a) - 180) < 8)) continue;
+    if (cands.some((c) => Math.abs(c.angle - a) < 20 || Math.abs(Math.abs(c.angle - a) - 180) < 20)) continue;
     cands.push({ angle: a, ok: false });
   }
   const R = Math.max(...pts.map((p) => Math.hypot(p[0] - cx, p[1] - cy))) * 1.25;

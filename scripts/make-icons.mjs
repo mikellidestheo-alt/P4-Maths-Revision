@@ -1,0 +1,43 @@
+// Renders the app icon SVG to PNGs with headless Chromium (run: npm run icons).
+import { chromium } from '@playwright/test';
+import { writeFileSync } from 'node:fs';
+
+const svg = (pad) => `
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0b0d2e"/><stop offset="1" stop-color="#45317e"/></linearGradient>
+    <radialGradient id="f"><stop offset="0" stop-color="#ffb347" stop-opacity=".7"/><stop offset="1" stop-color="#ffb347" stop-opacity="0"/></radialGradient>
+  </defs>
+  <rect width="512" height="512" fill="url(#g)"/>
+  <g transform="translate(256 256) scale(${1 - pad}) translate(-256 -256)">
+    <circle cx="380" cy="120" r="54" fill="#fff3c4"/>
+    <circle cx="362" cy="108" r="9" fill="#efe0a8"/>
+    <circle cx="80" cy="90" r="5" fill="#fff"/><circle cx="160" cy="60" r="4" fill="#fff"/><circle cx="250" cy="110" r="3" fill="#fff"/>
+    <path d="M0 380 Q 130 320 256 360 T 512 350 L 512 512 L 0 512 Z" fill="#1c2a40"/>
+    <polygon points="70,400 210,400 140,250" fill="#d9692f"/>
+    <polygon points="140,250 210,400 175,400" fill="#b5521f"/>
+    <polygon points="122,400 158,400 140,350" fill="#4a2412"/>
+    <ellipse cx="330" cy="390" rx="120" ry="80" fill="url(#f)"/>
+    <rect x="280" y="400" width="100" height="16" rx="7" fill="#6b3d1e" transform="rotate(-10 330 408)"/>
+    <rect x="280" y="400" width="100" height="16" rx="7" fill="#5a3218" transform="rotate(10 330 408)"/>
+    <polygon points="300,402 360,402 330,300" fill="#ff8a2a"/>
+    <polygon points="312,402 348,402 332,336" fill="#ffc34d"/>
+    <polygon points="44,470 116,470 80,330" fill="#173130"/><polygon points="420,470 500,470 460,320" fill="#173130"/>
+    <text x="256" y="490" font-family="Arial, sans-serif" font-size="64" font-weight="900" text-anchor="middle" fill="#ffd166">6</text>
+  </g>
+</svg>`;
+
+const browser = await chromium.launch();
+const page = await browser.newPage();
+async function render(file, size, pad) {
+  await page.setViewportSize({ width: size, height: size });
+  await page.setContent(`<html><body style="margin:0">${svg(pad).replace('<svg ', `<svg width="${size}" height="${size}" `)}</body></html>`);
+  writeFileSync(`public/icons/${file}`, await page.screenshot({ type: 'png' }));
+}
+await render('icon-192.png', 192, 0);
+await render('icon-512.png', 512, 0);
+await render('icon-maskable-512.png', 512, 0.2);
+await render('apple-touch-icon.png', 180, 0.04);
+writeFileSync('public/icons/icon.svg', svg(0).trim());
+await browser.close();
+console.log('icons written');
