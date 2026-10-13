@@ -1,5 +1,5 @@
 import { test, expect } from '@playwright/test';
-import { enterAnswer, info, playUntil, readSave, setTouch, setupFirstRun } from './bot';
+import { enterAnswer, info, playUntil, readSave, setTouch, openGame } from './bot';
 
 test('wrong-answer flow: hint after 1st miss, worked solution after 2nd, then the Campfire recap', async ({ page }) => {
   test.setTimeout(10 * 60_000);
@@ -7,7 +7,7 @@ test('wrong-answer flow: hint after 1st miss, worked solution after 2nd, then th
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(String(e)));
   await page.goto('./?bot=1');
-  await setupFirstRun(page);
+  await openGame(page);
   await page.locator('[data-action="start"]').tap();
   await page.locator('[data-job="1.2"]').tap();
 
@@ -65,12 +65,5 @@ test('wrong-answer flow: hint after 1st miss, worked solution after 2nd, then th
   expect(missedRecords.length).toBeGreaterThan(3);
   expect(missedRecords.some((m: any) => m.fixed)).toBe(true);
 
-  // parent area lists the missed questions with answers
-  await page.locator('[data-action="grownups"]').tap();
-  await page.locator('[data-action="hold"]').dispatchEvent('pointerdown');
-  await page.waitForTimeout(3200);
-  await expect(page.locator('[data-screen="parent"]')).toBeVisible();
-  await expect(page.locator('.missed details').first()).toBeVisible();
-  await page.screenshot({ path: 'e2e/screenshots/parent-after-wrongs.png', fullPage: true });
   expect(errors).toEqual([]);
 });

@@ -96,7 +96,7 @@ export interface Question {
   check(a: Answer): CheckResult;
   hint: string;
   worked: string[];
-  /** Human readable answer for the parent area. */
+  /** Human readable answer (shown in the worked solution). */
   answerText: string;
   /** Used to avoid identical repeats in a session. */
   signature: string;

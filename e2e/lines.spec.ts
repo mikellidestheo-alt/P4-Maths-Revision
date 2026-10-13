@@ -1,11 +1,11 @@
 import { test, expect } from '@playwright/test';
-import { enterAnswer, info, setTouch, setupFirstRun } from './bot';
+import { enterAnswer, info, setTouch, openGame } from './bot';
 
 // Every symmetry shape: every fold line is fully inside the picture and can be tapped.
 test('fold lines are fully visible and tappable for every shape', async ({ page }) => {
   setTouch(true);
   await page.goto('./?bot=1');
-  await setupFirstRun(page);
+  await openGame(page);
   for (let seed = 1; seed <= 40; seed++) {
     await page.evaluate((sd) => (window as any).__campPreview('2.6', 'tapLines', 3, sd), seed);
     await page.waitForFunction(() => (window as any).__camp && !(window as any).__camp.resolved);

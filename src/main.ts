@@ -32,8 +32,7 @@ function boot() {
     };
   }
   document.documentElement.dataset.build = __BUILD_ID__;
-  if (!app.data.setupDone) nav.firstRun(app);
-  else nav.home(app);
+  nav.home(app);
   registerSW();
 }
 

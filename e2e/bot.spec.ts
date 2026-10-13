@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { playUntil, readSave, setTouch, setupFirstRun } from './bot';
+import { playUntil, readSave, setTouch, openGame } from './bot';
 
 async function playNight(page: Page, n: number) {
   await expect(page.locator('[data-screen="home"]')).toBeVisible();
@@ -17,7 +17,7 @@ test('bot plays all six nights through the real UI and reaches the Dawn (weekend
   // Saturday morning, the weekend before the test
   await page.clock.install({ time: new Date('2026-10-17T09:00:00') });
   await page.goto('./?bot=1');
-  await setupFirstRun(page, { nickname: 'Tester' }); // default pacing = 3 nights a day
+  await openGame(page); // 3 nights a day (src/config/game.ts)
 
   const types = new Set<string>();
   let questions = 0;

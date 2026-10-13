@@ -11,6 +11,7 @@ import { nextQuestion, recapQuestion, QUESTIONS_PER_JOB } from '../../engine/pla
 import { runnerScreen } from './runner';
 import { play } from '../../game/audio';
 import { installHint } from './install';
+import { GAME } from '../../config/game';
 
 /* ---------- shared bits ---------- */
 
@@ -46,11 +47,9 @@ function topBar(app: App, opts: { back?: () => void; title?: string } = {}): HTM
     sound.setAttribute('aria-pressed', String(d.settings.sound));
     sound.setAttribute('aria-label', d.settings.sound ? 'Sound on — tap to turn off' : 'Sound off — tap to turn on');
   });
-  const grown = h('button', { type: 'button', class: 'icon-btn grown-btn', 'data-action': 'grownups', 'aria-label': 'Grown-ups area' }, '⚙️');
-  grown.addEventListener('click', () => nav.parentGate(app));
   const back = opts.back ? h('button', { type: 'button', class: 'icon-btn', 'data-action': 'back', 'aria-label': 'Back' }, '⟵') : null;
   back?.addEventListener('click', opts.back!);
-  return h('header', { class: 'topbar' }, back, moons, h('div', { class: 'topbar-right' }, coins, sound, grown));
+  return h('header', { class: 'topbar' }, back, moons, h('div', { class: 'topbar-right' }, coins, sound));
 }
 
 function confirmReplay(app: App, n: number) {
@@ -110,19 +109,18 @@ export function homeScreen(app: App): Screen {
   const n = nextNight(d);
   const asleep = campAsleep(d);
   const friendsRescued = NIGHTS.filter((x) => isFinished(d, x.n)).map((x) => x.friend);
-  const scene = h('div', { class: 'scene-wrap' }, campScene({ spook: d.settings.spook, decor: app.decor(), outfit: d.equipped.outfit, friends: friendsRescued, friendAccessory: d.equipped.friends }));
+  const scene = h('div', { class: 'scene-wrap' }, campScene({ spook: GAME.spook, decor: app.decor(), outfit: d.equipped.outfit, friends: friendsRescued, friendAccessory: d.equipped.friends }));
   if (asleep) scene.classList.add('asleep');
-  const name = d.nickname ? `, ${d.nickname}` : '';
   let message: string;
   const actions = h('div', { class: 'home-actions' });
   if (n === null) {
-    message = `You rescued all six friends${name}! The camp is safe. You can replay any night, or visit the shop.`;
+    message = `You rescued all six friends! The camp is safe. You can replay any night, or visit the shop.`;
     const dawn = h('button', { type: 'button', class: 'btn btn-primary btn-big', 'data-action': 'dawn' }, '🌅 See the Dawn again');
     dawn.addEventListener('click', () => nav.dawn(app));
     actions.appendChild(dawn);
   } else if (d.current && d.current.night === n) {
     const f = friendOf(n);
-    message = `Welcome back${name}! Let’s keep looking for ${f.name} the ${f.animal}.`;
+    message = `Welcome back! Let’s keep looking for ${f.name} the ${f.animal}.`;
     const go = h('button', { type: 'button', class: 'btn btn-primary btn-big', 'data-action': 'start' }, `Continue Night ${n} of 6`);
     go.addEventListener('click', () => nav.night(app, n));
     actions.appendChild(go);
@@ -132,7 +130,7 @@ export function homeScreen(app: App): Screen {
   } else {
     const f = friendOf(n);
     message = n === 1
-      ? `Hello${name}! I’m Wren, the camp guide. ${f.name} the ${f.animal} is lost in ${f.lostIn}. Will you help me run the camp and find them?`
+      ? `Hello! I’m Wren, the camp guide. ${f.name} the ${f.animal} is lost in ${f.lostIn}. Will you help me run the camp and find them?`
       : `${f.name} the ${f.animal} is lost in ${f.lostIn}! Ready for Night ${n}?`;
     const go = h('button', { type: 'button', class: 'btn btn-primary btn-big', 'data-action': 'start' }, `Start Night ${n} of 6`);
     go.addEventListener('click', () => tryStart(app, n));
@@ -149,7 +147,7 @@ export function homeScreen(app: App): Screen {
   const friends = h('button', { type: 'button', class: 'btn', 'data-action': 'friends' }, '🦔 Friends');
   friends.addEventListener('click', () => nav.friends(app));
   const left = allowanceLeft(d);
-  const pace = d.settings.pacing === 0 || n === null ? '' : asleep ? '' : `Nights left today: ${left === Infinity ? 'no limit' : left}`;
+  const pace = left === Infinity || n === null || asleep ? '' : `Nights left today: ${left}`;
   const el = h('div', { class: 'screen home', 'data-screen': 'home' },
     topBar(app),
     h('main', { class: 'home-main' },
@@ -218,7 +216,7 @@ export function nightScreen(app: App, n: number): Screen {
   const el = h('div', { class: 'screen night', 'data-screen': 'night', 'data-night': String(n) },
     topBar(app, { back: () => nav.home(app) }),
     h('main', { class: 'night-main' },
-      h('div', { class: 'scene-wrap scene-small' }, campScene({ spook: d.settings.spook, decor: app.decor(), outfit: d.equipped.outfit, showWren: false })),
+      h('div', { class: 'scene-wrap scene-small' }, campScene({ spook: GAME.spook, decor: app.decor(), outfit: d.equipped.outfit, showWren: false })),
       h('div', { class: 'night-panel' },
         h('h1', {}, `Night ${n}: Find ${f.name}${run.replay ? ' (replay)' : ''}`),
         speech(msg, d.equipped.outfit),
@@ -298,7 +296,7 @@ export function campfireScreen(app: App): Screen {
   go.addEventListener('click', () => (left > 0 ? nav.recap(app) : (run.stage = 'rescue', app.save(), nav.rescue(app))));
   const el = h('div', { class: 'screen campfire', 'data-screen': 'campfire' },
     h('main', { class: 'campfire-main' },
-      h('div', { class: 'scene-wrap' }, campScene({ spook: d.settings.spook, decor: app.decor(), outfit: d.equipped.outfit, fireBig: true })),
+      h('div', { class: 'scene-wrap' }, campScene({ spook: GAME.spook, decor: app.decor(), outfit: d.equipped.outfit, fireBig: true })),
       h('div', { class: 'night-panel' },
         h('h1', {}, 'Night falls…'),
         speech(left > 0
@@ -359,7 +357,6 @@ export function rescueScreen(app: App): Screen {
 
 export function checkinScreen(app: App, summary: NightSummary): Screen {
   const d = app.data;
-  let fun: 'boring' | 'good' | 'great' | null = null;
   let level: 'easy' | 'right' | 'hard' | null = null;
   const group = (label: string, opts: { v: string; t: string }[], set: (v: string) => void, attr: string) => {
     const g = h('div', { class: 'checkin-row', role: 'radiogroup', 'aria-label': label });
@@ -376,7 +373,7 @@ export function checkinScreen(app: App, summary: NightSummary): Screen {
   };
   const done = h('button', { type: 'button', class: 'btn btn-primary btn-big', 'data-action': 'goodnight' }, 'Goodnight! 🌙');
   done.addEventListener('click', () => {
-    applyCheckin(d, { night: summary.night, fun, level });
+    applyCheckin(d, level);
     app.save();
     if (summary.night === 6 && allFinished(d) && !d.flags.dawnSeen) nav.dawn(app);
     else if (campAsleep(d)) nav.rest(app);
@@ -385,8 +382,6 @@ export function checkinScreen(app: App, summary: NightSummary): Screen {
   const el = h('div', { class: 'screen checkin', 'data-screen': 'checkin' },
     h('main', { class: 'centre-panel' },
       h('h1', {}, 'Before bed…'),
-      h('h2', { class: 'checkin-q' }, 'How was tonight?'),
-      group('How was tonight?', [{ v: 'boring', t: '😴 Boring' }, { v: 'good', t: '🙂 Good' }, { v: 'great', t: '🤩 Great' }], (v) => (fun = v as typeof fun), 'data-fun'),
       h('h2', { class: 'checkin-q' }, 'Was the maths…'),
       group('Was the maths', [{ v: 'easy', t: 'Too easy' }, { v: 'right', t: 'Just right' }, { v: 'hard', t: 'Too hard' }], (v) => (level = v as typeof level), 'data-level'),
       done));
@@ -403,7 +398,7 @@ export function restScreen(app: App): Screen {
       h('div', { class: 'scene-wrap asleep' }, campScene({ spook: 'cosy', decor: app.decor(), outfit: d.equipped.outfit, showWren: false }), h('div', { class: 'zzz', 'aria-hidden': 'true' }, 'Z z z')),
       h('div', { class: 'night-panel' },
         h('h1', {}, 'The camp is asleep'),
-        speech(`Great work today${d.nickname ? ', ' + d.nickname : ''}! Brains grow while we sleep. Come back tomorrow for Night ${n ?? ''}.`, d.equipped.outfit),
+        speech(`Great work today! Brains grow while we sleep. Come back tomorrow for Night ${n ?? ''}.`, d.equipped.outfit),
         h('p', { class: 'small-help' }, 'You can still replay finished nights, or visit the shop.'),
         back)),
   );
@@ -423,7 +418,7 @@ export function dawnScreen(app: App): Screen {
       h('div', { class: 'scene-wrap' }, campScene({ spook: 'cosy', decor: app.decor(), outfit: d.equipped.outfit, dawn: true, friends: FRIENDS.map((f) => f.id), friendAccessory: d.equipped.friends }), h('div', { class: 'confetti', 'aria-hidden': 'true' }, ...Array.from({ length: 24 }, (_, i) => h('i', { class: `c${i % 6}`, style: { left: `${(i * 41) % 100}%`, animationDelay: `${(i % 8) * 0.4}s` } })))),
       h('div', { class: 'night-panel' },
         h('h1', {}, '🌅 Dawn!'),
-        speech(`You did it${d.nickname ? ', ' + d.nickname : ''}! All six friends are safe and the sun is coming up. You’re a true maths camper — good luck on Monday!`, d.equipped.outfit),
+        speech(`You did it! All six friends are safe and the sun is coming up. You’re a true maths camper — good luck on Monday!`, d.equipped.outfit),
         h('p', {}, `⭐ ${totalStars} stars out of 18 · 🪙 ${d.coinsEarnedTotal} coins earned`),
         back)),
   );

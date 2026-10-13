@@ -2,7 +2,8 @@
 import { PLAN } from '../config/difficulty';
 import { newJobState, recordResult, noteShown, type MissEntry } from '../engine/planner';
 import type { Question } from '../engine/types';
-import type { CheckIn, MissRecord, NightRun, SaveData, TopicStats } from '../storage/save';
+import type { MissRecord, NightRun, SaveData, TopicStats } from '../storage/save';
+import { GAME } from '../config/game';
 import { localDate, now } from './clock';
 import { NIGHTS } from './nights';
 import { TOPIC_LIST } from '../topics';
@@ -18,7 +19,7 @@ export const isFinished = (d: SaveData, n: number) => !!d.nights[n]?.finished;
 export const allFinished = (d: SaveData) => NIGHTS.every((x) => isFinished(d, x.n));
 
 export function isUnlocked(d: SaveData, n: number): boolean {
-  return n === 1 || isFinished(d, n - 1) || d.unlockedByParent.includes(n) || isFinished(d, n);
+  return n === 1 || isFinished(d, n - 1) || isFinished(d, n);
 }
 
 /** The next night to play (first unfinished), or null when all six are done. */
@@ -29,8 +30,8 @@ export function nextNight(d: SaveData): number | null {
 
 export function allowanceLeft(d: SaveData): number {
   refreshDaily(d);
-  if (d.settings.pacing === 0) return Infinity;
-  return Math.max(0, d.settings.pacing - d.daily.newNightsFinished);
+  if (GAME.nightsPerDay <= 0) return Infinity;
+  return Math.max(0, GAME.nightsPerDay - d.daily.newNightsFinished);
 }
 
 export type StartCheck = { ok: true; replay: boolean; resume: boolean } | { ok: false; reason: 'locked' | 'sleep' };
@@ -105,7 +106,7 @@ export function recordJobAnswer(d: SaveData, jobId: string, q: Question, o: Answ
       at: new Date(now()).toISOString(), night: run?.night ?? 0,
     };
     // only questions that needed the worked solution go to the campfire recap;
-    // ones fixed on the second try are still noted for the parent area
+    // ones fixed on the second try are still noted in the topic history (used to weight reviews)
     if (!o.eventual) run?.misses.push(miss);
     st.missed.push({ ...miss, fixed: o.eventual });
     if (st.missed.length > 12) st.missed.splice(0, st.missed.length - 12);
@@ -202,11 +203,10 @@ export function finishNight(d: SaveData): NightSummary | null {
   return summary;
 }
 
-/** End-of-night check-in. "Too easy/hard" nudges the starting tiers of later nights (clamped to ±1). */
-export function applyCheckin(d: SaveData, c: Omit<CheckIn, 'at'>) {
-  d.checkins.push({ ...c, at: new Date(now()).toISOString() });
-  if (c.level === 'easy') d.nudge = Math.min(1, d.nudge + 1);
-  if (c.level === 'hard') d.nudge = Math.max(-1, d.nudge - 1);
+/** End-of-night "was the maths…" answer: nudges the starting tiers of later nights (clamped to ±1). */
+export function applyCheckin(d: SaveData, level: 'easy' | 'right' | 'hard' | null) {
+  if (level === 'easy') d.nudge = Math.min(1, d.nudge + 1);
+  if (level === 'hard') d.nudge = Math.max(-1, d.nudge - 1);
   d.current = null;
 }
 
@@ -224,26 +224,4 @@ export function reviewWeights(d: SaveData): Record<string, number> {
     w[t.id] = 1 + 4 * (1 - rate) + 0.5 * Math.min(4, unfixed);
   }
   return w;
-}
-
-export interface TopicReport {
-  id: string;
-  title: string;
-  attempts: number;
-  firstPct: number | null;
-  eventualPct: number | null;
-  status: 'strong' | 'ok' | 'shaky' | 'new';
-  missed: MissRecord[];
-}
-
-export function topicReport(d: SaveData): TopicReport[] {
-  return TOPIC_LIST.map((t) => {
-    const st = d.topics[t.id];
-    if (!st || st.attempts === 0) return { id: t.id, title: t.title, attempts: 0, firstPct: null, eventualPct: null, status: 'new', missed: [] };
-    const firstPct = Math.round((100 * st.firstTry) / st.attempts);
-    const eventualPct = Math.round((100 * st.eventual) / st.attempts);
-    const unfixed = st.missed.filter((m) => !m.fixed).length;
-    const status = firstPct >= 80 && st.attempts >= 5 && unfixed <= 1 ? 'strong' : firstPct < 60 || unfixed >= 3 ? 'shaky' : 'ok';
-    return { id: t.id, title: t.title, attempts: st.attempts, firstPct, eventualPct, status, missed: st.missed.slice().reverse() };
-  });
 }

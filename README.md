@@ -16,20 +16,17 @@ written addition/subtraction, triangles, symmetry, reflection).
 - Coins buy cosmetic camp decorations only. No ads, accounts, tracking or network calls. Progress
   stays on the device.
 
-## Handing it over (grown-ups)
+## Handing it over
 
-1. Open the link on the phone/tablet/laptop she'll use. On first launch, a one-minute setup asks for
-   an optional nickname, an optional 4-digit PIN, nights per day (default **3 a day** — the weekend
-   plan) and spookiness (default **Cosy**). Just pressing **Continue** is fine.
+1. Open the link on the phone/tablet/laptop she'll use. It opens straight on the camp — there is no
+   setup screen, no account and no grown-ups area.
 2. Add it to the home screen (iPhone/iPad: Share → *Add to Home Screen*; Android: ⋮ → *Add to Home
    screen* / *Install app*). It then works offline.
-3. The ⚙️ button opens the **grown-ups area** (PIN, or press-and-hold if no PIN was set): per-topic
-   results, a strengths / worth-practising list, the exact missed questions with answers (to practise
-   on paper), check-in answers, settings, unlocking a night, resetting today's allowance, moving
-   progress to another device with a copy-and-paste code, and resetting everything.
+3. The only control is the 🔊 sound button at the top.
 
-Pacing: after the day's allowance of *new* nights, the camp goes to sleep until the next calendar
-day. Finished nights can always be replayed and replays never use up the allowance.
+Pacing: up to **3 new nights a day** (the weekend plan). After that the camp goes to sleep until the
+next calendar day. Finished nights can always be replayed and replays never use up the allowance.
+To change the number of nights per day (or the spookiness), edit **`src/config/game.ts`** and push.
 
 ## Developing
 
@@ -75,8 +72,9 @@ src/config/difficulty.ts   every tunable range
 src/engine/                seeded RNG, Question model, answer parsing, planner, geometry
 src/topics/                one generator module per topic (+ tests, spot-check)
 src/ui/                    widgets (number pad, place value, number line, clock, grid, column…), screens, SVG art
+src/config/game.ts         nights per day, spookiness
 src/game/                  nights & friends, pacing/scoring rules, shop, sounds
-src/storage/save.ts        versioned local save + progress codes
+src/storage/save.ts        versioned local save
 src/sw-template.js         service worker (filled in at build time)
 e2e/                       Playwright tests and the playthrough bot
 docs/                      PLAN, ASSUMPTIONS, QA_REPORT, SPOTCHECK

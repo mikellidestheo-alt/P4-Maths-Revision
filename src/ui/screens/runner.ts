@@ -257,7 +257,7 @@ export function runnerScreen(app: App, spec: RunnerSpec): Screen {
     );
     body.appendChild(sheet);
     setBanner('info', ['That was a tricky one. Read how it works, then carry on.']);
-    setTimeout(() => sheet.scrollIntoView({ behavior: app.data.settings.motion === 'reduce' ? 'auto' : 'smooth', block: 'start' }), 50);
+    setTimeout(() => sheet.scrollIntoView({ behavior: document.documentElement.classList.contains('reduce-motion') ? 'auto' : 'smooth', block: 'start' }), 50);
   }
 
   function peekFriend() {

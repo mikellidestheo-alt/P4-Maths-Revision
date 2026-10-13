@@ -17,8 +17,8 @@ export function installHint(app: App): HTMLElement | null {
   const ua = navigator.userAgent;
   const ios = /iPad|iPhone|iPod/.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1);
   const text = ios
-    ? 'Tip for grown-ups: tap the Share button (□↑), then “Add to Home Screen” so the camp works like an app — even offline.'
-    : 'Tip for grown-ups: use your browser menu (⋮) and choose “Add to Home screen” or “Install app” so the camp works like an app — even offline.';
+    ? 'Tip: tap the Share button (□↑), then “Add to Home Screen” so the camp works like an app — even offline.'
+    : 'Tip: use your browser menu (⋮) and choose “Add to Home screen” or “Install app” so the camp works like an app — even offline.';
   const close = h('button', { type: 'button', class: 'link-btn', 'data-action': 'install-dismiss' }, 'Got it');
   const box = h('div', { class: 'install-hint', role: 'note' }, h('p', {}, text), h('div', { class: 'row-end' }, close));
   if (deferred && !ios) {

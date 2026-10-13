@@ -266,12 +266,8 @@ export async function screen(page: Page): Promise<string> {
   return (await page.locator('[data-screen]').first().getAttribute('data-screen')) ?? '';
 }
 
-export async function setupFirstRun(page: Page, opts: { pacing?: 0 | 1 | 2 | 3; pin?: string; nickname?: string } = {}) {
-  await page.waitForSelector('[data-screen="first-run"]');
-  if (opts.nickname) await page.fill('#nick', opts.nickname);
-  if (opts.pin) await page.fill('#pin', opts.pin);
-  if (opts.pacing !== undefined) await page.click(`[data-pacing="${opts.pacing}"]`);
-  await page.click('[data-action="setup-continue"]');
+/** The game opens straight on the camp (there is no setup screen). */
+export async function openGame(page: Page) {
   await page.waitForSelector('[data-screen="home"]');
 }
 
@@ -334,7 +330,6 @@ export async function playUntil(page: Page, stopAt: (s: string) => boolean, wron
         await tap(page.locator('[data-action="rescue-next"]'));
         break;
       case 'checkin':
-        await tap(page.locator('[data-fun="great"]'));
         await tap(page.locator('[data-level="right"]'));
         await tap(page.locator('[data-action="goodnight"]'));
         break;

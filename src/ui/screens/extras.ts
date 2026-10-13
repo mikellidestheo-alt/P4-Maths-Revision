@@ -6,6 +6,7 @@ import { FRIENDS, NIGHTS } from '../../game/nights';
 import { isFinished } from '../../game/progress';
 import { campScene, friendSvg } from '../art';
 import { play } from '../../game/audio';
+import { GAME } from '../../config/game';
 
 export function shopScreen(app: App): Screen {
   const d = app.data;
@@ -14,7 +15,7 @@ export function shopScreen(app: App): Screen {
   const preview = h('div', { class: 'scene-wrap scene-small' });
   const renderPreview = () => {
     preview.innerHTML = '';
-    preview.appendChild(campScene({ spook: d.settings.spook, decor: app.decor(), outfit: d.equipped.outfit }));
+    preview.appendChild(campScene({ spook: GAME.spook, decor: app.decor(), outfit: d.equipped.outfit }));
   };
   const owned = (it: ShopItem) => d.owned.includes(it.id);
   const isOn = (it: ShopItem) => (it.exclusive ? d.equipped[it.slot] === it.id : owned(it) && d.equipped[it.id] !== 'off');

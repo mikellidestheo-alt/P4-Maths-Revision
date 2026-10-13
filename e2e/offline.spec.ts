@@ -33,7 +33,7 @@ test('works offline after the first visit, and picks up a new deploy cleanly', a
   const url = 'http://localhost:4180/P4-Maths-Revision/';
   try {
     await page.goto(url);
-    await page.click('[data-action="setup-continue"]');
+    await expect(page.locator('[data-screen="home"]')).toBeVisible();
     await page.waitForFunction(async () => { const r = await navigator.serviceWorker.ready; return !!r.active; });
     await page.reload();
     await page.waitForFunction(() => !!navigator.serviceWorker.controller);

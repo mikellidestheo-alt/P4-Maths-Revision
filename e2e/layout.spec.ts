@@ -72,9 +72,6 @@ test('screens and every interaction fit this viewport', async ({ page }, testInf
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(String(e)));
   await page.goto('./?bot=1');
-  await page.waitForSelector('[data-screen="first-run"]');
-  await check(page, 'first-run', P);
-  await page.click('[data-action="setup-continue"]');
   await page.waitForSelector('[data-screen="home"]');
   await check(page, 'home', P);
   await page.click('[data-action="start"]');
@@ -125,11 +122,5 @@ test('screens and every interaction fit this viewport', async ({ page }, testInf
   await page.waitForSelector('[data-screen="friends"]');
   await check(page, 'friends', P);
   await page.click('[data-action="back"]');
-  await page.click('[data-action="grownups"]');
-  await page.waitForSelector('[data-screen="gate"]');
-  await check(page, 'gate', P);
-  await page.locator('[data-action="hold"]').dispatchEvent('pointerdown');
-  await page.waitForSelector('[data-screen="parent"]', { timeout: 6000 });
-  await check(page, 'parent', P);
   expect(errors).toEqual([]);
 });

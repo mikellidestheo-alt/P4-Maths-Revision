@@ -12,7 +12,9 @@ no backend, no analytics. UK English, age 8–9 reading level, cosy (never scary
    stuck: two misses → worked solution → move on.
 3. Rewards are cosmetic only, for accuracy and fixing mistakes, never for time spent.
 4. Keep `main` deployable: run `npm test`, `npm run build` and `npm run e2e` before pushing.
-5. Never commit personal data (the repo is public). The child's nickname lives only in localStorage.
+5. Never commit personal data (the repo is public).
+6. There is deliberately **no grown-ups/parent area** (removed at the owner's request): no PIN,
+   nickname, settings screen or report. Game rules that were settings live in `src/config/game.ts`.
 
 ## Architecture
 - `src/config/difficulty.ts` — all ranges. Topic generators must read ranges from here.
@@ -26,7 +28,7 @@ no backend, no analytics. UK English, age 8–9 reading level, cosy (never scary
 - `src/ui/widgets/*` — one file per interaction. Every drag/draw widget also supports tap-to-place
   and/or arrow buttons, and questions provide a typed `fallback` where the maths allows.
 - `src/ui/screens/runner.ts` — the question flow (check, hint, retry, worked solution, coins).
-- `src/game/progress.ts` — pacing, unlocking, scoring, history, recap queue, parent report.
+- `src/game/progress.ts` — pacing, unlocking, scoring, history, recap queue, review weighting.
 - `src/storage/save.ts` — versioned schema (`SCHEMA_VERSION`) + `migrate()`; bump the version and
   add a migration step for any breaking change. All storage access is try/catch.
 

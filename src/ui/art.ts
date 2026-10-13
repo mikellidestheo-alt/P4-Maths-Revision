@@ -2,7 +2,7 @@
 import { s, svgRoot } from './dom';
 import { makeRng } from '../engine/rng';
 import { starPath } from './visuals';
-import type { Spook } from '../storage/save';
+import type { Spook } from '../config/game';
 
 type G = SVGGElement;
 

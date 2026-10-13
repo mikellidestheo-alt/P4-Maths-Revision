@@ -1,23 +1,16 @@
 /**
  * Versioned save data, kept only on this device (localStorage).
  * Everything is wrapped in try/catch: if storage is unavailable (private mode, blocked) the game
- * still works using memory only, and the parent area says so.
+ * still works using memory only, and the home screen says so.
  */
 import type { JobState, MissEntry } from '../engine/planner';
 import { localDate, now } from '../game/clock';
 
 export const SAVE_KEY = 'sixNightsCamp.save';
-export const SCHEMA_VERSION = 1;
-
-export type Pacing = 0 | 1 | 2 | 3; // 0 = no limit
-export type Spook = 'cosy' | 'mild' | 'spooky';
+export const SCHEMA_VERSION = 2;
 
 export interface Settings {
-  pacing: Pacing;
-  spook: Spook;
   sound: boolean;
-  motion: 'auto' | 'reduce' | 'full';
-  textSize: 'normal' | 'large' | 'xl';
 }
 
 export interface MissRecord extends MissEntry {
@@ -59,13 +52,6 @@ export interface NightRun {
   };
 }
 
-export interface CheckIn {
-  night: number;
-  fun: 'boring' | 'good' | 'great' | null;
-  level: 'easy' | 'right' | 'hard' | null;
-  at: string;
-}
-
 export interface NightRecord {
   finished: boolean;
   firstFinishedAt?: string;
@@ -76,12 +62,8 @@ export interface NightRecord {
 export interface SaveData {
   schemaVersion: number;
   createdAt: string;
-  setupDone: boolean;
-  pin: string | null;
-  nickname: string;
   settings: Settings;
   nights: Record<string, NightRecord>;
-  unlockedByParent: number[];
   daily: { date: string; newNightsFinished: number };
   current: NightRun | null;
   topics: Record<string, TopicStats>;
@@ -89,22 +71,17 @@ export interface SaveData {
   coinsEarnedTotal: number;
   owned: string[];
   equipped: Record<string, string>;
-  /** -1 easier, 0 normal, +1 harder (from check-ins) */
+  /** -1 easier, 0 normal, +1 harder (from the end-of-night "was the maths…" answer) */
   nudge: number;
-  checkins: CheckIn[];
-  flags: { installHintSeen: boolean; dawnSeen: boolean; storageWarned: boolean };
+  flags: { installHintSeen: boolean; dawnSeen: boolean };
 }
 
 export function defaultSave(): SaveData {
   return {
     schemaVersion: SCHEMA_VERSION,
     createdAt: new Date(now()).toISOString(),
-    setupDone: false,
-    pin: null,
-    nickname: '',
-    settings: { pacing: 3, spook: 'cosy', sound: true, motion: 'auto', textSize: 'normal' },
+    settings: { sound: true },
     nights: {},
-    unlockedByParent: [],
     daily: { date: localDate(), newNightsFinished: 0 },
     current: null,
     topics: {},
@@ -113,36 +90,34 @@ export function defaultSave(): SaveData {
     owned: ['lantern-gold'],
     equipped: { lantern: 'lantern-gold' },
     nudge: 0,
-    checkins: [],
-    flags: { installHintSeen: false, dawnSeen: false, storageWarned: false },
+    flags: { installHintSeen: false, dawnSeen: false },
   };
 }
 
-/** Bring any older / partial save up to the current schema without losing progress. */
+/**
+ * Bring any older / partial save up to the current schema without losing progress.
+ * v1 → v2: the grown-ups area was removed (PIN, nickname, pacing/spookiness/motion/text settings,
+ * parent unlocks and check-in history are dropped; nights, coins, shop items and history are kept).
+ */
 export function migrate(raw: unknown): SaveData {
   const base = defaultSave();
   if (!raw || typeof raw !== 'object') return base;
-  const r = raw as Partial<SaveData> & { schemaVersion?: number };
-  // Future schema changes go here, e.g. if (r.schemaVersion === 1) { …; r.schemaVersion = 2 }
+  const r = raw as Partial<SaveData>;
   const out: SaveData = {
-    ...base,
-    ...r,
     schemaVersion: SCHEMA_VERSION,
-    settings: { ...base.settings, ...(r.settings ?? {}) },
-    daily: { ...base.daily, ...(r.daily ?? {}) },
-    flags: { ...base.flags, ...(r.flags ?? {}) },
+    createdAt: typeof r.createdAt === 'string' ? r.createdAt : base.createdAt,
+    settings: { sound: typeof r.settings?.sound === 'boolean' ? r.settings.sound : true },
     nights: { ...(r.nights ?? {}) },
+    daily: { ...base.daily, ...(r.daily ?? {}) },
+    current: r.current ?? null,
     topics: { ...(r.topics ?? {}) },
+    coins: typeof r.coins === 'number' && r.coins >= 0 && Number.isFinite(r.coins) ? r.coins : 0,
+    coinsEarnedTotal: typeof r.coinsEarnedTotal === 'number' ? r.coinsEarnedTotal : 0,
     owned: Array.isArray(r.owned) ? r.owned : base.owned,
     equipped: { ...base.equipped, ...(r.equipped ?? {}) },
-    unlockedByParent: Array.isArray(r.unlockedByParent) ? r.unlockedByParent : [],
-    checkins: Array.isArray(r.checkins) ? r.checkins : [],
+    nudge: typeof r.nudge === 'number' ? Math.max(-1, Math.min(1, Math.round(r.nudge))) : 0,
+    flags: { installHintSeen: !!r.flags?.installHintSeen, dawnSeen: !!r.flags?.dawnSeen },
   };
-  if (![0, 1, 2, 3].includes(out.settings.pacing)) out.settings.pacing = 3;
-  if (!['cosy', 'mild', 'spooky'].includes(out.settings.spook)) out.settings.spook = 'cosy';
-  if (typeof out.coins !== 'number' || out.coins < 0 || !Number.isFinite(out.coins)) out.coins = 0;
-  if (typeof out.nudge !== 'number') out.nudge = 0;
-  out.nudge = Math.max(-1, Math.min(1, Math.round(out.nudge)));
   if (out.current && (typeof out.current.night !== 'number' || !out.current.jobs)) out.current = null;
   return out;
 }
@@ -154,8 +129,6 @@ export interface Store {
   /** set when a corrupted save was found and replaced */
   recovered: boolean;
   save(): void;
-  replace(d: SaveData): void;
-  reset(): void;
 }
 
 function storageWorks(): boolean {
@@ -205,60 +178,6 @@ export function openStore(): Store {
         // quota or blocked: keep playing from memory
       }
     },
-    replace(d) {
-      store.data = migrate(d);
-      store.save();
-    },
-    reset() {
-      const keep = { pin: store.data.pin, nickname: store.data.nickname, settings: store.data.settings, setupDone: store.data.setupDone };
-      store.data = { ...defaultSave(), ...keep };
-      store.save();
-    },
   };
   return store;
-}
-
-/* ---------- progress code (copy/paste between devices) ---------- */
-
-const CODE_PREFIX = 'CAMP1.';
-
-function checksum(s: string): string {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = (Math.imul(h, 31) + s.charCodeAt(i)) >>> 0;
-  return h.toString(36).padStart(7, '0').slice(-7);
-}
-
-function toBase64(str: string): string {
-  const bytes = new TextEncoder().encode(str);
-  let bin = '';
-  bytes.forEach((b) => (bin += String.fromCharCode(b)));
-  return btoa(bin).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-}
-
-function fromBase64(b64: string): string {
-  const norm = b64.replace(/-/g, '+').replace(/_/g, '/');
-  const bin = atob(norm + '='.repeat((4 - (norm.length % 4)) % 4));
-  const bytes = Uint8Array.from(bin, (c) => c.charCodeAt(0));
-  return new TextDecoder().decode(bytes);
-}
-
-/** Export progress (the PIN is left out on purpose). */
-export function exportCode(d: SaveData): string {
-  const payload = toBase64(JSON.stringify({ ...d, pin: null, current: null }));
-  return `${CODE_PREFIX}${payload}.${checksum(payload)}`;
-}
-
-export function importCode(code: string): SaveData | null {
-  const c = code.replace(/\s+/g, '');
-  if (!c.startsWith(CODE_PREFIX)) return null;
-  const rest = c.slice(CODE_PREFIX.length);
-  const dot = rest.lastIndexOf('.');
-  if (dot < 0) return null;
-  const payload = rest.slice(0, dot), sum = rest.slice(dot + 1);
-  if (checksum(payload) !== sum) return null;
-  try {
-    return migrate(JSON.parse(fromBase64(payload)));
-  } catch {
-    return null;
-  }
 }

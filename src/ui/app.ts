@@ -4,6 +4,7 @@ import { clear } from './dom';
 import { setSoundEnabled, unlockAudio } from '../game/audio';
 import { refreshDaily } from '../game/progress';
 import { itemById } from '../game/shop';
+import { GAME } from '../config/game';
 
 export type Screen = { el: HTMLElement; onBack?: () => void; onKey?: (e: KeyboardEvent) => boolean; destroy?: () => void; title?: string };
 
@@ -74,10 +75,9 @@ export class App {
   applySettings() {
     const st = this.data.settings;
     const html = document.documentElement;
-    const reduce = st.motion === 'reduce' || (st.motion === 'auto' && window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
-    html.classList.toggle('reduce-motion', !!reduce);
-    html.dataset.text = st.textSize;
-    html.dataset.spook = st.spook;
+    // motion follows the device's "reduce motion" setting
+    html.classList.toggle('reduce-motion', !!window.matchMedia?.('(prefers-reduced-motion: reduce)').matches);
+    html.dataset.spook = GAME.spook;
     const lantern = itemById(this.data.equipped.lantern ?? 'lantern-gold')?.id ?? 'lantern-gold';
     html.dataset.lantern = lantern.replace('lantern-', '');
     setSoundEnabled(st.sound);

@@ -7,19 +7,26 @@ Playwright 1.56). Nobody has played it on a real phone yet — see "Not verified
 
 | Check | Result |
 |---|---|
-| `npm test` — 142 unit tests (engine, planner, every topic generator) | ✅ pass |
+| `npm test` — 144 unit tests (engine, planner, every topic generator) | ✅ pass |
 | `npm run build` — type-check + production build (≈72 KB JS gzipped, 8 KB CSS) | ✅ pass |
 | Bot plays the whole game through the real UI (6 nights, 180 job questions + recaps) to the Dawn | ✅ pass (repeated with fresh random questions — see below) |
 | Bot "wrong answers" variant: retry → hint, worked solution, review marking, Campfire recap, rescue | ✅ pass |
 | Viewport matrix (6 sizes) — every screen and every interaction type | ✅ pass |
-| Pacing with a mocked clock; parent unlock / reset; PIN gate | ✅ pass |
-| Storage blocked, corrupted save, old-schema migration, progress-code round trip, mid-night resume | ✅ pass |
+| Pacing with a mocked clock (3 new nights a day, replays free, next day resets) | ✅ pass |
+| Storage blocked, corrupted save, old-schema migration (v1 → v2), mid-night resume | ✅ pass |
 | Real touch drags (Chrome touch emulation), typed fallbacks, arrow-button fallback, laptop keyboard | ✅ pass |
 | Offline after first visit; new deploy picked up; old caches removed; offline then serves the new build | ✅ pass |
 | WebKit (Safari engine) | ⚠️ not run — WebKit is not installed in this environment (see below) |
 
+## Update — grown-ups area removed
+At the owner's request the whole parent mode was removed (first-run setup, PIN gate, grown-ups area,
+nickname, settings, progress codes, parent unlock/reset, "How was tonight?"). Nights per day (3) and
+spookiness (Cosy) are now fixed in `src/config/game.ts`. The save schema moved to v2 with a migration
+that keeps existing progress. All unit and end-to-end tests were updated and re-run after the change
+(results below reflect the current build).
+
 ## Deployment status
-- `main` was updated and the **Deploy to GitHub Pages** workflow ran on GitHub: `npm ci`, the 142 unit
+- `main` was updated and the **Deploy to GitHub Pages** workflow ran on GitHub: `npm ci`, the unit
   tests and the production build all **passed on GitHub's runner**. The final Pages step stopped with
   "Get Pages site failed … Not Found" because Pages is not yet enabled for the repository.
 - **To finish:** GitHub → repository **Settings → Pages → Build and deployment → Source: GitHub
@@ -98,13 +105,12 @@ Night 1 with deliberate misses: first miss shows "Not quite!", the story feedbac
 button becomes "Try again"; second miss shows "Let's work it out together", the answer and "This one
 will come back at the campfire". The Campfire offered 3–8 skills to fix; every recap question
 re-tested a skill that was missed (same kind, new numbers); missing a recap question twice still moves
-on; rescue shows fewer than 3 stars; "too hard" check-in sets the difficulty nudge to −1; the
-grown-ups area lists the missed questions with answers.
+on; rescue shows fewer than 3 stars; answering "too hard" sets the difficulty nudge to −1.
 
 ### Viewport matrix — `e2e/layout.spec.ts`
 Sizes: iPhone portrait 390×844, iPhone landscape 844×390, small Android 360×740, tablet portrait
-820×1180, tablet landscape 1180×820, laptop 1366×768. For first run, home, night, shop, friends,
-grown-ups gate and area, and **21 question previews covering every interaction type**, it asserts:
+820×1180, tablet landscape 1180×820, laptop 1366×768. For home, night, shop, friends,
+and **21 question previews covering every interaction type**, it asserts:
 no horizontal scroll; no control clipped sideways; tap targets ≥ 40 px (most are 44–56 px); the prompt
 and the Check button are on screen; the first answer box is visible above the number pad; the number
 pad never overlaps the question area.
@@ -132,13 +138,13 @@ Screenshots: `e2e/screenshots/<viewport>--<screen>.png` (regenerated on each run
 - Laptop: typing digits and Enter on a physical keyboard; Enter for Next; times with a colon.
 
 ### Pacing and storage — `e2e/storage.spec.ts`
-1-a-day pacing: asleep after one new night; sleeping moon → rest screen; replay of a finished night
-still allowed; grown-up "Reset today's nights" works; next calendar day restores the allowance by
-itself. Parent unlock of Night 4 → playable from the moons. PIN: wrong PIN refused, right PIN opens.
-Progress code: export → wipe → a damaged code is rejected → real code restores coins, nights, topics,
-shop items, nickname. Storage blocked (`localStorage` throws): game plays, grown-up warning shown.
-Corrupted JSON: fresh start, no crash, raw copy kept as a backup key. Old/partial save: migrated, not
-lost. Closing mid-night: "Continue Night 1", job shows "3/10 done", resumes at question 4.
+First visit opens straight on the camp; there is no grown-ups button. Pacing (3 a day): after three
+new nights the camp sleeps; tonight's moon → rest screen; replaying a finished night is allowed and
+doesn't use the allowance; the next calendar day restores the allowance by itself; with two nights done
+the third can still start. Storage blocked (`localStorage` throws): game plays and the home screen says
+progress won't be saved. Corrupted JSON: fresh start, no crash, raw copy kept as a backup key. A v1
+save (with the old PIN/nickname fields) migrates to v2 keeping coins and nights. Closing mid-night:
+"Continue Night 1", job shows "3/10 done", resumes at question 4.
 
 ### Offline and updates — `e2e/offline.spec.ts`
 Two builds served from a local server. After the first visit the service worker controls the page;
@@ -151,7 +157,7 @@ Colour contrast of main text on the night background is high (≈ 15:1; muted te
 on orange ≈ 9:1). Status is never shown by colour alone (ticks, text labels, "Strong / Worth practising"
 words). Visible focus rings, `aria-label`s on icon buttons, radio/checkbox roles on choices, live
 regions for feedback, keyboard support for the number pad, number line, order list and line picking.
-Reduced motion follows the device setting (or the grown-ups setting) and stops all animation.
+Reduced motion follows the device setting and stops all animation.
 
 ## Not verified / known limitations
 - **No real-device testing.** Behaviour on actual iPhones/iPads (Safari), Android Chrome and the
@@ -160,7 +166,7 @@ Reduced motion follows the device setting (or the grown-ups setting) and stops a
   installing browsers. To run it: `npx playwright install webkit && PW_WEBKIT=1 npm run e2e`.
 - iOS-specific: audio needs a first tap (handled); "Add to Home Screen" must be done from Safari's
   Share menu (the in-game tip says so). iOS may clear website data for home-screen apps that are
-  unused for weeks — irrelevant for a weekend but worth knowing; use the progress code to back up.
+  unused for weeks — irrelevant for a weekend but worth knowing.
 - The 12×12 reflection grid is small on a 360 px phone (each square ≈ 26 px). Taps snap to the
   nearest dot, there's a ghost marker while pressing, and an arrow-button fallback and typed fallback.
 - Sound effects are synthesised and were not listened to on device speakers.
