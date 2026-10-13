@@ -27,15 +27,12 @@ that keep existing progress. All unit and end-to-end tests were updated and re-r
 (results below reflect the current build).
 
 ## Deployment status
-- `main` was updated and the **Deploy to GitHub Pages** workflow ran on GitHub: `npm ci`, the unit
-  tests and the production build all **passed on GitHub's runner**. The final Pages step stopped with
-  "Get Pages site failed … Not Found" because Pages is not yet enabled for the repository.
-- **To finish:** GitHub → repository **Settings → Pages → Build and deployment → Source: GitHub
-  Actions**, then **Actions → Deploy to GitHub Pages → Run workflow** (or push any commit). The game
-  will then be live at https://mikellidestheo-alt.github.io/P4-Maths-Revision/.
-- The live URL could not be fetched from this build environment (outbound access to github.io is
-  blocked here), so the deployed site itself has not been loaded by me; the identical build was
-  tested locally (offline/update test serves it under the same `/P4-Maths-Revision/` path).
+- GitHub Pages is enabled (source: GitHub Actions). Every push to `main` runs **Deploy to GitHub
+  Pages**: unit tests → build → publish. The first runs failed only because Pages wasn't enabled yet;
+  since then deploys succeed (first successful deploy: run #4, "Remove all night limits").
+- Live at https://mikellidestheo-alt.github.io/P4-Maths-Revision/. The live URL could not be fetched
+  from this build environment (outbound access to github.io is blocked here); the identical build was
+  tested locally under the same `/P4-Maths-Revision/` path.
 
 ## Unit tests (`npm test`)
 
