@@ -1,0 +1,21 @@
+import type { TopicModule } from '../engine/types';
+import { topic11 } from './t11';
+import { topic12 } from './t12';
+import { topic13 } from './t13';
+import { topic14 } from './t14';
+import { topic15 } from './t15';
+import { topic16 } from './t16';
+import { topic17 } from './t17';
+import { topic18 } from './t18';
+import { topic21 } from './t21';
+import { topic22 } from './t22';
+import { topic23 } from './t23';
+import { topic24 } from './t24';
+import { topic25 } from './t25';
+import { topic26 } from './t26';
+import { topic27 } from './t27';
+
+export const TOPIC_LIST: TopicModule[] = [topic11, topic12, topic13, topic14, topic15, topic16, topic17, topic18, topic21, topic22, topic23, topic24, topic25, topic26, topic27];
+export const TOPICS: Record<string, TopicModule> = Object.fromEntries(TOPIC_LIST.map((t) => [t.id, t]));
+export const UNIT1 = TOPIC_LIST.filter((t) => t.unit === 1).map((t) => t.id);
+export const UNIT2 = TOPIC_LIST.filter((t) => t.unit === 2).map((t) => t.id);

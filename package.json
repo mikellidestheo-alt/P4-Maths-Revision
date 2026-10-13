@@ -1,0 +1,24 @@
+{
+  "name": "six-nights-at-camp",
+  "private": true,
+  "version": "1.0.0",
+  "description": "6 Nights at Camp – a cosy forest-camp maths revision game (offline PWA).",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --port 4173 --strictPort",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "e2e": "playwright test",
+    "icons": "node scripts/make-icons.mjs",
+    "spotcheck": "vitest run src/topics/spotcheck.test.ts"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1",
+    "@types/node": "^22.20.5",
+    "typescript": "5.9.3",
+    "vite": "7.3.7",
+    "vitest": "3.2.7"
+  }
+}
