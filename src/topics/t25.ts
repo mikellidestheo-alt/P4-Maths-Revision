@@ -102,7 +102,7 @@ function triVisual(s: number[], labels = true): Visual {
   const pts = layout(s);
   // side order in visual: AB (base) = s[0], BC = s[1], CA = s[2]
   const ticks = s.map((v) => s.filter((w) => w === v).length > 1 ? (s.indexOf(v) === s.lastIndexOf(v) ? 0 : 1) : 0);
-  return { kind: 'shape', pts, sideLabels: labels ? s.map((v) => `${v} cm`) : undefined, ticks: labels ? undefined : ticks };
+  return { kind: 'shape', pts, sideLabels: labels ? s.map((v) => `${v} m`) : undefined, ticks: labels ? undefined : ticks };
 }
 
 function genClassify(rng: Rng, tier: Tier): Question {
@@ -158,7 +158,10 @@ function genSort(rng: Rng, tier: Tier): Question {
     bins = [{ id: 'equilateral', label: 'Equilateral' }, { id: 'isosceles', label: 'Isosceles' }, { id: 'scalene', label: 'Scalene' }];
     type K = 'equilateral' | 'isosceles' | 'scalene';
     const kinds = rng.shuffle<K>(['equilateral', 'isosceles', 'scalene', rng.pick<K>(['isosceles', 'scalene'])]);
-    items = kinds.map((k, i) => ({ id: `t${i}`, label: `Tent ${i + 1}`, visual: triVisual(sideSet(k, rng)), bin: k }));
+    items = kinds.map((k, i) => {
+      const sides = sideSet(k, rng);
+      return { id: `t${i}`, label: `Tent ${i + 1}: ${sides.join(', ')} m`, visual: { kind: 'shape' as const, pts: layout(sides) }, bin: k };
+    });
   }
   const expected: Record<string, string> = {};
   for (const it of items) expected[it.id] = it.bin;

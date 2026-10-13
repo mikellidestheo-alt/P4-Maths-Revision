@@ -4,7 +4,7 @@ import { nav } from '../nav';
 import { campScene, friendSvg, jobIcon, moonIcon, wrenSvg } from '../art';
 import { FRIENDS, JOB_BLURB, JOB_ICON, NIGHTS, friendOf, jobDef } from '../../game/nights';
 import {
-  allFinished, applyCheckin, buildRecapQueue, campAsleep, canStart, finishNight, isFinished, nextNight,
+  allFinished, applyCheckin, buildRecapQueue, campAsleep, canStart, finishNight, isFinished, isUnlocked, nextNight,
   noteQuestionShown, recordJobAnswer, recordRecapAnswer, reviewWeights, startNight, allowanceLeft, type NightSummary,
 } from '../../game/progress';
 import { nextQuestion, recapQuestion, QUESTIONS_PER_JOB } from '../../engine/planner';
@@ -23,10 +23,10 @@ function topBar(app: App, opts: { back?: () => void; title?: string } = {}): HTM
   const moons = h('nav', { class: 'moons', 'aria-label': 'Six nights' },
     ...NIGHTS.map((n) => {
       const done = isFinished(d, n.n);
-      const isNext = nextNight(d) === n.n;
-      const state = done ? 'done' : isNext ? (campAsleep(d) ? 'sleep' : 'next') : 'locked';
+      const isNext = nextNight(d) === n.n || (!done && isUnlocked(d, n.n));
+      const state = done ? 'done' : isNext ? (allowanceLeft(d) <= 0 && d.current?.night !== n.n ? 'sleep' : 'next') : 'locked';
       const stars = d.nights[n.n]?.bestStars ?? 0;
-      const label = `Night ${n.n}: ${done ? `finished, ${stars} star${stars === 1 ? '' : 's'}${opts.back ? '' : ' — tap to replay'}` : isNext ? 'tonight' : 'not yet'}`;
+      const label = `Night ${n.n}: ${done ? `finished, ${stars} star${stars === 1 ? '' : 's'}${opts.back ? '' : ' — tap to replay'}` : isNext ? 'open — tap to play' : 'not yet'}`;
       const b = h('button', { type: 'button', class: `moon-btn moon-${state}`, 'data-moon': String(n.n), 'aria-label': label, disabled: !done && !(isNext && !opts.back) },
         moonIcon(state, n.n),
         done ? h('span', { class: 'moon-stars', 'aria-hidden': 'true' }, '★'.repeat(stars)) : null);

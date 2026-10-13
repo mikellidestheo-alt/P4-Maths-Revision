@@ -96,8 +96,22 @@ export function runnerScreen(app: App, spec: RunnerSpec): Screen {
     widgetHolder.appendChild(w.el);
     padWrap.hidden = !w.usesPad;
     root.classList.toggle('has-pad', w.usesPad);
+    requestAnimationFrame(fitVisual);
     if (app.debug) exposeDebug();
   }
+
+  /** With the number pad showing, shrink a picture so the answer boxes stay visible above it. */
+  function fitVisual() {
+    const svg = widgetHolder.querySelector<SVGSVGElement>('.widget-fields .visual svg');
+    if (!svg || !widget?.usesPad) return;
+    svg.style.maxHeight = '';
+    const overflow = body.scrollHeight - body.clientHeight;
+    if (overflow > 0) {
+      const cur = svg.getBoundingClientRect().height;
+      svg.style.maxHeight = `${Math.max(150, Math.floor(cur - overflow - 6))}px`;
+    }
+  }
+  window.addEventListener('resize', () => requestAnimationFrame(fitVisual));
 
   let widgetHolder = h('div');
   let fallbackLink: HTMLButtonElement | null = null;
@@ -151,6 +165,7 @@ export function runnerScreen(app: App, spec: RunnerSpec): Screen {
 
   function renderActions() {
     actions.innerHTML = '';
+    root.classList.toggle('has-pad', !!widget?.usesPad && !resolved);
     if (!resolved) {
       const check = h('button', { type: 'button', class: 'btn btn-primary btn-check', 'data-action': 'check' }, attempts ? 'Try again' : 'Check');
       check.addEventListener('click', submit);

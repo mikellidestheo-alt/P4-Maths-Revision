@@ -22,6 +22,7 @@ export class App {
     this.rng = makeRng(randomSeed());
     this.debug = /[?&]bot=1/.test(location.search);
     refreshDaily(this.store.data);
+    this.store.save();
     this.applySettings();
     // first gesture unlocks audio (iOS needs this)
     const unlock = () => unlockAudio();

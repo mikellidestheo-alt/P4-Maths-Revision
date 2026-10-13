@@ -26,6 +26,9 @@ function applyAttrs(el: Element, attrs: Attrs) {
       Object.assign((el as HTMLElement).style, v);
     } else if (k === 'class') {
       el.setAttribute('class', String(v));
+    } else if (typeof v === 'string' && v.includes('var(') && el instanceof SVGElement) {
+      // CSS variables are not reliable inside SVG presentation attributes on every browser: use style
+      (el as SVGElement).style.setProperty(k, v);
     } else if (v === true) {
       el.setAttribute(k, '');
     } else {

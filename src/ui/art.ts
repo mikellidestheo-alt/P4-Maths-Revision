@@ -253,7 +253,7 @@ export function campScene(o: SceneOpts): SVGSVGElement {
   svg.appendChild(stars);
   // moon or sun
   if (o.dawn) {
-    svg.append(s('circle', { cx: 400, cy: 330, r: 140, fill: '#ffd27a', opacity: 0.35 }), s('circle', { cx: 400, cy: 330, r: 70, fill: '#ffcf66', class: 'sun' }));
+    svg.append(s('circle', { cx: 400, cy: 330, r: 150, fill: 'url(#moonGlow)' }), s('circle', { cx: 400, cy: 330, r: 70, fill: '#ffe08a', class: 'sun' }));
   } else {
     svg.append(s('circle', { cx: 660, cy: 90, r: 80, fill: 'url(#moonGlow)' }), s('circle', { cx: 660, cy: 90, r: 34, fill: '#fff3c4' }), s('circle', { cx: 648, cy: 82, r: 6, fill: '#efe0a8' }), s('circle', { cx: 672, cy: 100, r: 4, fill: '#efe0a8' }));
   }

@@ -232,7 +232,7 @@ export function shapeSvg(v: Extract<Visual, { kind: 'shape' }>, box = { w: 280, 
   v.rightAngles?.forEach((i) => {
     const p = pts[i], a = pts[(i + pts.length - 1) % pts.length], b = pts[(i + 1) % pts.length];
     const u = norm([a[0] - p[0], a[1] - p[1]]), w = norm([b[0] - p[0], b[1] - p[1]]);
-    const q = 14;
+    const q = Math.max(14, box.w * 0.07);
     svg.appendChild(s('path', { d: `M ${p[0] + u[0] * q} ${p[1] + u[1] * q} L ${p[0] + (u[0] + w[0]) * q} ${p[1] + (u[1] + w[1]) * q} L ${p[0] + w[0] * q} ${p[1] + w[1] * q}`, class: 'right-angle' }));
   });
   for (const l of v.lines ?? []) {
@@ -255,7 +255,9 @@ export function linesSvg(v: Extract<Visual, { kind: 'lines' }>): ShapeFrame {
   for (const l of v.lines) {
     const [x1, y1] = map(l.a), [x2, y2] = map(l.b);
     svg.appendChild(s('line', { x1, y1, x2, y2, class: 'plank', 'data-plank': l.id }));
-    const [lx, ly] = map([l.a[0] - 0.35, l.a[1] + 0.35]);
+    const dx = l.b[0] - l.a[0], dy = l.b[1] - l.a[1], L = Math.hypot(dx, dy) || 1;
+    const lp: Point = [Math.max(0.45, Math.min(v.w - 0.45, l.a[0] - (dx / L) * 0.5)), Math.max(0.6, Math.min(v.h - 0.25, l.a[1] - (dy / L) * 0.5 - 0.2))];
+    const [lx, ly] = map(lp);
     svg.appendChild(s('text', { x: lx, y: ly, class: 'plank-label', 'text-anchor': 'middle' }, l.label));
   }
   return { svg, map };
