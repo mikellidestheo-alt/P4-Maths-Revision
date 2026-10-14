@@ -28,6 +28,7 @@ time by a tiny Vite plugin) gives offline play and clean updates.
 - [x] Follow-up: 3D third-person forest world with quest markers (Three.js), 2D fallback, dark forest backdrop behind tasks
 - [x] Follow-up: start (title) screen over the circling 3D camp, with a 2D fallback version
 - [x] Follow-up: background music (synthesised campfire lullaby; quieter during questions; brighter at dawn; 🎵 toggle)
+- [x] Follow-up: full screen toggle (start screen and top bar; hidden where unsupported)
 
 Note: because the whole game was built in one autonomous session, the
 milestones were developed in order on one branch and verified together;

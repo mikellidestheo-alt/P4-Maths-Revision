@@ -12,6 +12,7 @@ import { GAME } from '../../config/game';
 import { play, unlockAudio } from '../../game/audio';
 import { use3D } from './world';
 import { soundButtons } from '../soundButtons';
+import { fullscreenButton } from '../fullscreen';
 import type { World } from '../../world/world';
 import { objective } from '../../world/quest';
 import { stateForWorld } from './world';
@@ -60,7 +61,7 @@ export function startScreen(app: App): Screen {
   const el = h('div', { class: 'screen start-screen', 'data-screen': 'start' },
     stage,
     h('div', { class: 'start-overlay' },
-      h('div', { class: 'start-top' }, ...soundButtons(app)),
+      h('div', { class: 'start-top' }, ...soundButtons(app), fullscreenButton()),
       h('main', { class: 'start-panel' },
         h('h1', { class: 'start-title' }, h('span', { class: 'start-six' }, '6'), ' Nights at Camp'),
         h('p', { class: 'start-sub' }, sub),

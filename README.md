@@ -32,7 +32,8 @@ written addition/subtraction, triangles, symmetry, reflection).
    screen* / *Install app*). It then works offline.
 3. Controls: joystick (touch) or W A S D / arrow keys (keyboard) to walk, drag to look around,
    **Walk to marker** to be walked there, then **Start** (or Enter) at a glowing marker. 🎵 turns the
-   background music on/off; 🔊 turns all sound on/off.
+   background music on/off; 🔊 turns all sound on/off; the corners button goes full screen (not on
+   iPhone, where Safari doesn't allow it — add it to the home screen instead).
 
 There is **no limit on nights**: she can play as many as she likes in one go. Nights open in story
 order (Night 2 after Night 1, and so on), and finished nights can always be replayed.

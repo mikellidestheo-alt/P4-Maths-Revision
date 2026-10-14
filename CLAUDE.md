@@ -40,6 +40,8 @@ no backend, no analytics. UK English, age 8–9 reading level, cosy (never scary
 - `src/game/music.ts` — background music synthesised live with Web Audio (no audio files). The notes come
   from `musicScore.ts` (pure, unit-tested): a slow 3/4 lullaby; mood `camp`, `focus` (questions: same song,
   sparser and quieter) or `dawn`. A screen picks its mood with `Screen.music`. Loudness is `GAME.musicVolume`.
+- `src/ui/fullscreen.ts` — full screen button (Fullscreen API + webkit prefix); returns null where unsupported
+  (iPhone Safari), so callers must allow a missing button. Not saved: browsers only allow it from a tap.
 - `src/storage/save.ts` — versioned schema (`SCHEMA_VERSION`) + `migrate()`; bump the version and
   add a migration step for any breaking change. All storage access is try/catch.
 

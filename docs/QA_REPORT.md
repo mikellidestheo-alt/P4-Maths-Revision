@@ -85,6 +85,16 @@ fades out when the app is in the background. Verified:
 - **Not verified:** how it sounds on a real phone speaker (small speakers lose the low bass; the
   melody and music-box parts are in the range phones play well).
 
+## Update — full screen
+A full screen button (expand-corners icon) sits next to 🎵 and 🔊 on the start screen and in the top bar.
+It hides the browser's address bar and tabs; the 3D world resizes to fill the screen. Tapping it again,
+pressing Esc or swiping out all leave full screen, and the button always shows the current state. It is
+not saved between visits, because browsers only allow full screen straight after a tap. iPhone Safari
+has no full screen for web pages, so the button is left out there (adding the game to the home screen
+already opens it without the browser bars). Verified (e2e): the button toggles full screen on and off,
+full screen carries on from the start screen into the game, the button follows when full screen is left
+another way, and it is left out when the browser has no full screen. Layout tests pass at all six sizes.
+
 ## Deployment status
 - GitHub Pages is enabled (source: GitHub Actions). Every push to `main` runs **Deploy to GitHub
   Pages**: unit tests → build → publish. The first runs failed only because Pages wasn't enabled yet;

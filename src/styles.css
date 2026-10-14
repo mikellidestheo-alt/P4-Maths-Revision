@@ -99,6 +99,7 @@ svg { display: block; }
   min-width: 44px; min-height: 44px; border-radius: 12px; border: 0;
   background: rgba(255, 255, 255, 0.08); font-size: 1.25rem; cursor: pointer; touch-action: manipulation;
 }
+.icon-btn-svg { display: inline-flex; align-items: center; justify-content: center; color: var(--text, #fff); }
 .icon-btn.is-off { position: relative; opacity: 0.5; }
 .icon-btn.is-off::after { content: ''; position: absolute; left: 9px; right: 9px; top: 50%; height: 3px; border-radius: 2px; background: #fff; transform: rotate(-35deg); }
 .link-btn { background: none; border: 0; color: var(--hintc); text-decoration: underline; min-height: 44px; padding: 6px 4px; cursor: pointer; font-size: 0.95rem; }
@@ -124,7 +125,7 @@ svg { display: block; }
 .moon-done .moon-num { fill: #3b2a00; }
 .moon-next .moon { animation: pulse 2.4s ease-in-out infinite; }
 .moon-stars { position: absolute; left: 0; right: 0; bottom: -2px; font-size: 9px; color: var(--gold); letter-spacing: -1px; }
-@media (max-width: 600px) {
+@media (max-width: 660px) {
   .topbar { flex-wrap: wrap; }
   .moons { order: 3; flex-basis: 100%; }
 }

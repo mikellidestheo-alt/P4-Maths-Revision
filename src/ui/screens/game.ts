@@ -12,6 +12,7 @@ import { runnerScreen } from './runner';
 import { play } from '../../game/audio';
 import { installHint } from './install';
 import { soundButtons } from '../soundButtons';
+import { fullscreenButton } from '../fullscreen';
 import { GAME } from '../../config/game';
 
 /* ---------- shared bits ---------- */
@@ -41,7 +42,7 @@ export function topBar(app: App, opts: { back?: () => void; title?: string } = {
   const coins = h('div', { class: 'coins', 'aria-label': `${d.coins} coins` }, '🪙 ', h('span', { 'data-coins': '1' }, String(d.coins)));
   const back = opts.back ? h('button', { type: 'button', class: 'icon-btn', 'data-action': 'back', 'aria-label': 'Back' }, '⟵') : null;
   back?.addEventListener('click', opts.back!);
-  return h('header', { class: 'topbar' }, back, moons, h('div', { class: 'topbar-right' }, coins, ...soundButtons(app)));
+  return h('header', { class: 'topbar' }, back, moons, h('div', { class: 'topbar-right' }, coins, ...soundButtons(app), fullscreenButton()));
 }
 
 function confirmReplay(app: App, n: number) {

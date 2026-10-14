@@ -65,6 +65,43 @@ test('background music: starts with Play, goes quiet for questions, and the 🎵
   await expect.poll(async () => (await music()).playing).toBe(true);
 });
 
+test('full screen button: on the start screen and in the game, toggles full screen and back', async ({ page }) => {
+  await page.goto('./?bot=1');
+  const fs = page.locator('[data-action="fullscreen"]');
+  await expect(fs).toBeVisible();
+  await expect(fs).toHaveAttribute('aria-pressed', 'false');
+  await fs.click();
+  await expect.poll(() => page.evaluate(() => !!document.fullscreenElement)).toBe(true);
+  await expect(fs).toHaveAttribute('aria-pressed', 'true');
+  await expect(fs).toHaveAttribute('aria-label', 'Leave full screen');
+  // stays full screen into the game; the top bar button shows it
+  await page.locator('[data-action="play"]').click();
+  await expect(page.locator('[data-screen="world"]')).toBeVisible();
+  expect(await page.evaluate(() => !!document.fullscreenElement)).toBe(true);
+  await expect(page.locator('[data-action="fullscreen"]')).toHaveAttribute('aria-pressed', 'true');
+  // left some other way (e.g. Esc): the button follows
+  await page.evaluate(() => document.exitFullscreen());
+  await expect(page.locator('[data-action="fullscreen"]')).toHaveAttribute('aria-pressed', 'false');
+  await page.locator('[data-action="fullscreen"]').click();
+  await expect.poll(() => page.evaluate(() => !!document.fullscreenElement)).toBe(true);
+  await page.locator('[data-action="fullscreen"]').click();
+  await expect.poll(() => page.evaluate(() => !!document.fullscreenElement)).toBe(false);
+});
+
+test('full screen button is left out where the browser has no full screen (iPhone Safari)', async ({ page }) => {
+  await page.addInitScript(() => {
+    for (const k of ['fullscreenEnabled', 'webkitFullscreenEnabled']) Object.defineProperty(Document.prototype, k, { get: () => false });
+    for (const k of ['requestFullscreen', 'webkitRequestFullscreen']) Object.defineProperty(Element.prototype, k, { value: undefined });
+  });
+  await page.goto('./?bot=1');
+  await expect(page.locator('[data-action="play"]')).toBeVisible();
+  await expect(page.locator('[data-action="fullscreen"]')).toHaveCount(0);
+  await page.locator('[data-action="play"]').click();
+  await expect(page.locator('[data-screen="world"]')).toBeVisible();
+  await expect(page.locator('[data-action="music"]')).toBeVisible();
+  await expect(page.locator('[data-action="fullscreen"]')).toHaveCount(0);
+});
+
 test('3D: the marker moves along the path; closing mid-job resumes at the same task', async ({ page }) => {
   await open(page, './?bot=1');
   await expect(page.locator('[data-screen="world"]')).toBeVisible();
