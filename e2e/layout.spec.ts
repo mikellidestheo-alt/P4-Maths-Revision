@@ -78,8 +78,9 @@ test('screens and every interaction fit this viewport', async ({ page }, testInf
   await check(page, 'start', P);
   {
     const vh0 = await page.evaluate(() => window.innerHeight);
-    const pb = (await page.locator('[data-action="play"]').boundingBox())!;
-    expect(pb.y + pb.height, 'Play button on screen').toBeLessThanOrEqual(vh0 + 1);
+    // the open night (the main thing to tap) is on screen without scrolling
+    const pb = (await page.locator('.pick-next').boundingBox())!;
+    expect(pb.y + Math.min(pb.height, 80), 'Night 1 card on screen').toBeLessThanOrEqual(vh0 + 1);
   }
   await page.locator('[data-action="play"]').click();
   await page.waitForSelector('[data-screen="world"]');

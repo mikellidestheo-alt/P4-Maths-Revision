@@ -30,6 +30,7 @@ time by a tiny Vite plugin) gives offline play and clean updates.
 - [x] Follow-up: background music (synthesised campfire lullaby; quieter during questions; brighter at dawn; 🎵 toggle)
 - [x] Follow-up: full screen toggle (start screen and top bar; hidden where unsupported)
 - [x] Follow-up: after all six nights, the start screen lists the nights with their maths topics to choose from
+- [x] Follow-up: the night cards are always on the start screen; Nights 2–6 locked (story order) until the first playthrough
 
 Note: because the whole game was built in one autonomous session, the
 milestones were developed in order on one branch and verified together;

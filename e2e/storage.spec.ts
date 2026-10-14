@@ -164,21 +164,47 @@ test('3D: the marker moves along the path; closing mid-job resumes at the same t
   expect(Math.hypot(w.t.x, w.t.z)).toBeGreaterThan(Math.hypot(w.p.x, w.p.z) + 8);
 });
 
-test('start screen: title, Play, Continue mid-night; Enter also starts', async ({ page }) => {
+test('start screen: night cards with only Night 1 open; Continue mid-night; Enter also starts', async ({ page }) => {
   await page.goto('./?bot=1');
   await expect(page.locator('[data-screen="start"]')).toBeVisible();
   await expect(page.locator('.start-title')).toContainText('Nights at Camp');
-  await expect(page.locator('[data-action="play"]')).toHaveText(/Start/);
-  await expect(page.locator('.start-moons .moon')).toHaveCount(6);
-  await page.locator('[data-action="play"]').click();
+  const cards = page.locator('[data-pick-night]');
+  await expect(cards).toHaveCount(6);
+  await expect(cards.nth(0)).toBeEnabled();
+  await expect(cards.nth(0)).toHaveClass(/pick-next/);
+  await expect(cards.nth(0)).toContainText('▶ Play');
+  for (let i = 1; i < 6; i++) {
+    await expect(cards.nth(i)).toBeDisabled();
+    await expect(cards.nth(i)).toContainText(`Finish Night ${i} to unlock`);
+  }
+  // locked nights still show what maths is coming
+  await expect(cards.nth(1)).toContainText('Time intervals');
+  // Enter plays the open night
+  await page.keyboard.press('Enter');
   await expect(page.locator('[data-screen="world"]')).toBeVisible();
+  await expect(page.locator('[data-quest]')).toContainText('Night 1 of 6');
   await walkAndInteract(page);
   await playQuestion(page);
   await page.reload();
   await expect(page.locator('[data-action="play"]')).toHaveText(/Continue Night 1/);
+  await expect(page.locator('[data-pick-night="1"]')).toContainText('In progress');
   await page.keyboard.press('Enter');
   await expect(page.locator('[data-screen="world"]')).toBeVisible();
   await expect(page.locator('.world-canvas canvas')).toBeVisible();
+});
+
+test('start screen: finishing a night unlocks the next one; finished nights can be replayed', async ({ page }) => {
+  await page.goto('./?bot=1');
+  await page.evaluate((k) => localStorage.setItem(k, JSON.stringify({ schemaVersion: 3, nights: { 1: { finished: true, bestStars: 2, plays: 1 }, 2: { finished: true, bestStars: 3, plays: 1 } } })), KEY);
+  await page.reload();
+  await expect(page.locator('[data-pick-night="1"]')).toBeEnabled();
+  await expect(page.locator('[data-pick-night="1"]')).toContainText('★★☆');
+  await expect(page.locator('[data-pick-night="2"]')).toContainText('★★★');
+  await expect(page.locator('[data-pick-night="3"]')).toHaveClass(/pick-next/);
+  for (const n of [4, 5, 6]) await expect(page.locator(`[data-pick-night="${n}"]`)).toBeDisabled();
+  await expect(page.locator('.start-sub')).toContainText('Juniper');
+  await page.locator('[data-pick-night="3"]').click();
+  await expect(page.locator('[data-quest]')).toContainText('Night 3 of 6');
 });
 
 test('2D fallback also has the start screen', async ({ page }) => {

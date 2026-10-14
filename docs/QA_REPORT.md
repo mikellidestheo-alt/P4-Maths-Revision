@@ -112,6 +112,18 @@ first round is complete the start screen is unchanged. Verified:
   (phones, landscape) and every card and "Explore the camp" can be reached; one column on phones, two on
   tablets in portrait, three on wider screens. Screenshots reviewed.
 
+## Update — night cards from the very start
+The start screen now always shows the six night cards (friend + the night's maths). On the first
+playthrough Night 1 is open and glowing with a "▶ Play" badge; Nights 2–6 are dimmed, with a padlock and
+"Finish Night N to unlock", but still show their maths so she can see what is coming. Finishing a night
+opens the next one (the same story-order rule as the rest of the game) and finished nights show their
+stars and can be replayed; after the full playthrough all six are open. "Continue Night N" sits on top
+when a night is half done (that card says "In progress"); "Explore the camp" and "How to play" sit
+underneath. Enter plays the open night. Verified (e2e): only Night 1 open on a first visit; locked cards
+can't be tapped and list their maths; Enter starts Night 1; Continue/In progress after a reload; with
+Nights 1–2 done, Night 3 glows and 4–6 stay locked; the after-all-six picker tests still pass. Layout: fits
+all six sizes, and the Night 1 card is on screen without scrolling. Screenshots reviewed.
+
 ## Deployment status
 - GitHub Pages is enabled (source: GitHub Actions). Every push to `main` runs **Deploy to GitHub
   Pages**: unit tests → build → publish. The first runs failed only because Pages wasn't enabled yet;

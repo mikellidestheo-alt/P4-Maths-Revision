@@ -625,7 +625,14 @@ svg { display: block; }
   padding: 10px 12px; min-height: 44px; border-radius: 16px; border: 2px solid rgba(255, 209, 102, 0.35);
   background: rgba(14, 12, 40, 0.88); touch-action: manipulation;
 }
-.pick-card:hover, .pick-card:focus-visible { border-color: var(--gold); background: rgba(30, 24, 70, 0.95); }
+.pick-card:not(:disabled):hover, .pick-card:not(:disabled):focus-visible { border-color: var(--gold); background: rgba(30, 24, 70, 0.95); }
+.pick-next { border-color: var(--gold); animation: actglow 1.8s ease-in-out infinite; }
+.pick-locked { cursor: default; border-style: dashed; border-color: rgba(255, 255, 255, 0.18); background: rgba(14, 12, 40, 0.7); }
+.pick-locked .pick-name, .pick-locked .pick-topics { opacity: 0.6; }
+.pick-locked .pick-name strong { color: var(--text); }
+.pick-lock { margin-left: auto; font-size: 1.1rem; }
+.pick-locked-note { font-size: 0.85rem; color: var(--muted); }
+.pick-badge.pick-badge-next { background: var(--gold); color: #3b2a00; }
 .pick-here { border-color: var(--good); }
 .pick-head { display: flex; align-items: center; gap: 10px; }
 .pick-head .moon { width: 36px; height: 36px; margin: 0; flex: none; }

@@ -35,8 +35,8 @@ no backend, no analytics. UK English, age 8–9 reading level, cosy (never scary
   `models.ts` builds blocky meshes; `world.ts` is the renderer/player/camera, kept alive between screens.
   `src/ui/screens/world.ts` is the HUD and falls back to the 2D camp when WebGL is missing (`?2d=1` forces it).
   `src/ui/screens/start.ts` is the title screen the app boots into; it shows the same World in `attract` mode
-  (camera orbits the camp, no input, no quest beam). Once all six nights are done it shows a night picker
-  instead of the single Play button; each card lists the night's maths from `nightMaths(n)` in `game/nights.ts`. Screens must only unmount the World if it is still in
+  (camera orbits the camp, no input, no quest beam). It shows a card per night listing the night's maths
+  (`nightMaths(n)` in `game/nights.ts`); cards follow `isUnlocked` (story order), and all open after a full playthrough. Screens must only unmount the World if it is still in
   their own stage (the next screen may already have taken it).
 - `src/game/music.ts` — background music synthesised live with Web Audio (no audio files). The notes come
   from `musicScore.ts` (pure, unit-tested): a slow 3/4 lullaby; mood `camp`, `focus` (questions: same song,

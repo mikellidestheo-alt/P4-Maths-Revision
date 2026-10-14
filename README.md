@@ -26,8 +26,10 @@ written addition/subtraction, triangles, symmetry, reflection).
 ## Handing it over
 
 1. Open the link on the phone/tablet/laptop she'll use. It opens on a title screen (the 3D camp slowly
-   circling behind it) with one big **Start** button — it says **Continue Night N** or **Play Night N**
-   once she has begun. There is no setup screen, no account and no grown-ups area.
+   circling behind it) with a card for each of the six nights, showing the friend and the three kinds of
+   maths in it. At first only Night 1 is open (tap it to play); the others show a padlock until the night
+   before is finished. **Continue Night N** appears on top if she stopped partway. There is no setup
+   screen, no account and no grown-ups area.
 2. Add it to the home screen (iPhone/iPad: Share → *Add to Home Screen*; Android: ⋮ → *Add to Home
    screen* / *Install app*). It then works offline.
 3. Controls: joystick (touch) or W A S D / arrow keys (keyboard) to walk, drag to look around,
@@ -37,8 +39,7 @@ written addition/subtraction, triangles, symmetry, reflection).
 
 There is **no limit on nights**: she can play as many as she likes in one go. Nights open in story
 order (Night 2 after Night 1, and so on), and finished nights can always be replayed. Once all six are
-done, the start screen becomes a **choose a night** list: each night shows its friend, best stars and the
-three kinds of maths in it (e.g. "Time intervals", "Review: a mix of Nights 1–3"), and tapping one plays it.
+done, every card on the start screen is open, so she can choose any night (each shows its best stars).
 Spookiness is set in **`src/config/game.ts`**.
 
 ## Developing
