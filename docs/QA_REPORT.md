@@ -144,6 +144,20 @@ child, not a secret.
 - **Layout:** the dialog fits all six sizes (keypad beside the text on a phone held sideways); screenshots
   reviewed.
 
+## Update — Unlock All opens every task too
+With Unlock All on, all three task signs of the night are open in the 3D forest, in any order. The marker
+(and "Walk to marker") still points at the first task left; the other open signs spin and glow, and
+walking up to any of them shows "▶ Start: <that job>". The quest card counts tasks done ("Task 2 of 3")
+and Wren explains: "Every job tonight is open — visit the glowing signs in any order. Bramble appears when
+all three are done." The friend still only appears at the end of the path once all three tasks (and the
+campfire, if anything needs fixing) are done. Without Unlock All nothing changes: one task at a time, in
+path order. (The 2D fallback always let the three jobs be picked in any order.)
+- **Unit tests:** normally only the marked task is open; with Unlock All every unfinished task is open,
+  doing Task 3 first leaves the marker on Task 1, no friend until the last task, then the friend; works on
+  any night; each sign has its own spot.
+- **e2e (3D):** with Unlock All, Night 1 played as Task 3 → Task 2 → Task 1 through the real Start button
+  at each sign; the quest stays on tasks until the third is done, then shows "Rescue Bramble".
+
 ## Deployment status
 - GitHub Pages is enabled (source: GitHub Actions). Every push to `main` runs **Deploy to GitHub
   Pages**: unit tests → build → publish. The first runs failed only because Pages wasn't enabled yet;

@@ -7,8 +7,8 @@ import type { App, Screen } from '../app';
 import { nav } from '../nav';
 import { topBar } from './game';
 import { World, webglAvailable, type WorldState } from '../../world/world';
-import { objective, stepsDone, type Objective } from '../../world/quest';
-import { NIGHTS, friendOf } from '../../game/nights';
+import { doneJobs, objective, openJobs, type Objective } from '../../world/quest';
+import { NIGHTS, friendOf, jobDef } from '../../game/nights';
 import { allFinished, canStart, isFinished, startNight } from '../../game/progress';
 import { GAME } from '../../config/game';
 import { iconCanvas, preloadIcons } from '../worldIcons';
@@ -37,7 +37,8 @@ export function stateForWorld(app: App, o: Objective): WorldState {
   return {
     objective: o,
     night,
-    stepsDone: night ? stepsDone(d, night) : 0,
+    doneJobs: night ? doneJobs(d, night) : [],
+    openJobs: openJobs(d, o),
     rescued: NIGHTS.filter((n) => isFinished(d, n.n)).map((n) => n.friend),
     friendIds: NIGHTS.map((n) => n.friend),
     dawn: allFinished(d),
@@ -57,10 +58,14 @@ function questText(app: App, o: Objective): { title: string; step: string; tip: 
   const replay = app.data.current?.replay ? ' (replay)' : '';
   const title = `Night ${o.night} of 6 · Find ${f.name}${replay}`;
   if (o.kind === 'job') {
+    const done = doneJobs(app.data, o.night).length;
+    const anyOrder = app.data.flags.allUnlocked && done < 2;
     return {
       title,
-      step: `Task ${o.step} of 3: ${o.label}`,
-      tip: o.step === 1 && !o.started
+      step: `Task ${done + 1} of 3: ${o.label}`,
+      tip: anyOrder
+        ? `${f.name} the ${f.animal} is lost in ${f.lostIn}! Every job tonight is open — visit the glowing signs in any order. ${f.name} appears when all three are done.`
+        : o.step === 1 && !o.started
         ? `${f.name} the ${f.animal} is lost in ${f.lostIn}! Follow the glowing light to your first job.`
         : o.step === 1 ? 'Your first job is waiting by the glowing light.' : `Brilliant! The next job is further along the path towards ${f.lostIn}.`,
     };
@@ -115,13 +120,14 @@ export function worldScreen(app: App): Screen {
         startNight(d, cur.night);
         app.save();
       }
-      nav.job(app, cur.jobId);
+      // with Unlock All she may be standing at a different open task than the marked one
+      nav.job(app, world.nearJob ?? cur.jobId);
     } else if (cur.kind === 'recap') nav.recap(app);
     else nav.rescue(app);
   };
   act.addEventListener('click', interact);
   const actLabel = (cur: Objective) =>
-    cur.kind === 'job' ? `▶ Start: ${cur.label}` : cur.kind === 'recap' ? `🔥 Light the campfire (${cur.left} to fix)` : cur.kind === 'friend' ? `💛 Rescue ${friendOf(cur.night).name}` : '';
+    cur.kind === 'job' ? `▶ Start: ${world.nearJob ? jobDef(world.nearJob).job : cur.label}` : cur.kind === 'recap' ? `🔥 Light the campfire (${cur.left} to fix)` : cur.kind === 'friend' ? `💛 Rescue ${friendOf(cur.night).name}` : '';
 
   world.events = {
     onNear: (near) => {

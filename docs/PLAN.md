@@ -32,6 +32,7 @@ time by a tiny Vite plugin) gives offline play and clean updates.
 - [x] Follow-up: after all six nights, the start screen lists the nights with their maths topics to choose from
 - [x] Follow-up: the night cards are always on the start screen; Nights 2–6 locked (story order) until the first playthrough
 - [x] Follow-up: "Unlock All" button on the title screen behind a passcode (1234)
+- [x] Follow-up: Unlock All also opens every task in a night (any order); the friend still appears only after all three
 
 Note: because the whole game was built in one autonomous session, the
 milestones were developed in order on one branch and verified together;

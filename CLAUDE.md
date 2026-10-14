@@ -16,7 +16,9 @@ no backend, no analytics. UK English, age 8–9 reading level, cosy (never scary
 6. There is deliberately **no grown-ups/parent area** (removed at the owner's request): no PIN,
    nickname, settings screen or report. Game rules that were settings live in `src/config/game.ts`.
    The one exception (also the owner's request): an **Unlock All** button on the title screen, behind a
-   passcode (`GAME.unlockCode`, `src/ui/unlockAll.ts`), which sets `flags.allUnlocked`. The repo is public,
+   passcode (`GAME.unlockCode`, `src/ui/unlockAll.ts`), which sets `flags.allUnlocked`: every night opens,
+   and in 3D each night's three tasks can be done in any order (`openJobs` in `world/quest.ts`); the friend
+   still only appears once all three (and any campfire recap) are done. The repo is public,
    so the code is a gentle gate, not a secret.
 7. There is deliberately **no daily night limit** and no "come back tomorrow" screen (owner's request).
 

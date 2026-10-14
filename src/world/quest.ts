@@ -2,6 +2,7 @@
  * What the quest marker points at, worked out from the save data (pure, unit-tested).
  * Order each night: Task 1 → Task 2 → Task 3 → (Campfire, only if something needs fixing) → friend.
  * The friend only appears at the end of the path once everything before it is done.
+ * With Unlock All, tonight's tasks can be done in any order (the marker still shows the first one left).
  */
 import type { SaveData } from '../storage/save';
 import { NIGHTS, friendOf, jobDef } from '../game/nights';
@@ -37,9 +38,27 @@ export function objective(d: SaveData): Objective {
   return { kind: 'friend', night: n, dist: SPOT_DIST.friend, point: along(n, SPOT_DIST.friend), label: `Rescue ${f.name}` };
 }
 
-/** How many of tonight's steps are done (for "Task 2 of 3" and the path lanterns). */
-export function stepsDone(d: SaveData, n: number): number {
+const jobDone = (d: SaveData, n: number, j: string) => {
   const run = d.current;
-  if (!run || run.night !== n) return 0;
-  return NIGHTS[n - 1].jobs.filter((j) => run.jobs[j]?.done).length;
+  return !!run && run.night === n && (run.jobs[j]?.done || run.jobs[j]?.index >= 10);
+};
+
+/** Tonight's finished tasks (any order). */
+export function doneJobs(d: SaveData, n: number): string[] {
+  return NIGHTS[n - 1].jobs.filter((j) => jobDone(d, n, j));
+}
+
+/**
+ * Tasks that can be started now: just the marked one normally; every unfinished one with Unlock All.
+ * Once the tasks are done (campfire / friend), none.
+ */
+export function openJobs(d: SaveData, o: Objective): string[] {
+  if (o.kind !== 'job') return [];
+  if (!d.flags.allUnlocked) return [o.jobId];
+  return NIGHTS[o.night - 1].jobs.filter((j) => !jobDone(d, o.night, j));
+}
+
+/** Where a task's sign is (on the path, for walking up to it). */
+export function jobPoint(n: number, jobId: string): V2 {
+  return along(n, STEP_DIST[NIGHTS[n - 1].jobs.indexOf(jobId)]);
 }

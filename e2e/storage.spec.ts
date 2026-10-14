@@ -249,6 +249,55 @@ test('Unlock All: the passcode opens every night; a wrong code does nothing; it 
   await expect(page.locator('[data-moon="4"]')).toBeEnabled();
 });
 
+test('Unlock All (3D): tonight\'s tasks can be done in any order; the friend only appears after all three', async ({ page }) => {
+  test.setTimeout(180_000);
+  await page.goto('./?bot=1');
+  await page.evaluate((k) => localStorage.setItem(k, JSON.stringify({ schemaVersion: 3, flags: { allUnlocked: true } })), KEY);
+  await page.reload();
+  await page.locator('[data-pick-night="1"]').click();
+  await expect(page.locator('[data-screen="world"]')).toBeVisible();
+  await expect(page.locator('.world-tip')).toContainText('any order');
+  const spots = () => page.evaluate(() => (window as any).__campWorld.jobSpots.map((j: any) => j.jobId));
+  expect(await spots()).toEqual(['1.1', '1.2', '1.3']);
+  await page.evaluate(() => { const w = (window as any).__campWorld; const p = w.jobSpots[0].point; w.teleport(p.x * 0.55, p.z * 0.55); });
+  await page.waitForTimeout(1200);
+  await page.screenshot({ path: 'e2e/screenshots/unlock-all-open-tasks.png' });
+  const goTo = async (jobId: string) => {
+    await page.evaluate((id) => {
+      const w = (window as any).__campWorld;
+      const p = w.jobSpots.find((j: any) => j.jobId === id).point;
+      w.teleport(p.x, p.z);
+    }, jobId);
+    await expect(page.locator('[data-action="interact"]')).toBeVisible();
+  };
+  const playJob = async () => {
+    await expect(page.locator('.q-prompt')).toBeVisible();
+    for (let i = 0; i < 10; i++) await playQuestion(page);
+    await page.locator('[data-action="job-back"]').click();
+    await expect(page.locator('[data-screen="world"]')).toBeVisible();
+  };
+  // Task 3 first (the marker points at Task 1, but every sign is open)
+  await goTo('1.3');
+  await expect(page.locator('[data-action="interact"]')).toContainText('Start: Sort the stockroom');
+  await page.locator('[data-action="interact"]').click();
+  await playJob();
+  expect(await spots()).toEqual(['1.1', '1.2']);
+  await expect(page.locator('[data-quest]')).toHaveAttribute('data-quest', 'job');
+  await expect(page.locator('[data-quest-step]')).toContainText('Task 2 of 3');
+  // then Task 2, then Task 1: no friend until the last one is done
+  await goTo('1.2');
+  await page.locator('[data-action="interact"]').click();
+  await playJob();
+  await expect(page.locator('[data-quest]')).toHaveAttribute('data-quest', 'job');
+  await goTo('1.1');
+  await page.locator('[data-action="interact"]').click();
+  await playJob();
+  await expect(page.locator('[data-quest]')).toHaveAttribute('data-quest', 'friend');
+  await expect(page.locator('[data-quest]')).toContainText('Rescue Bramble');
+  const save = await readSave(page);
+  for (const j of ['1.1', '1.2', '1.3']) expect(save.current.jobs[j].done).toBe(true);
+});
+
 test('2D fallback also has the start screen', async ({ page }) => {
   await page.goto('./?bot=1&2d=1');
   await expect(page.locator('[data-screen="start"] svg.scene')).toBeVisible();

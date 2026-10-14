@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { besidePath, PROP_RADIUS, SPOT_DIST, CAMP_COLLIDERS, PATH_HALF_WIDTH, TREE_RADIUS, WALK_RADIUS, dist, fireSpot, friendSpot, inClearing, routeTo, taskSpot, treeLayout, type V2 } from './layout';
-import { objective } from './quest';
+import { doneJobs, jobPoint, objective, openJobs } from './quest';
 import { defaultSave } from '../storage/save';
 import { startNight } from '../game/progress';
 import { newJobState } from '../engine/planner';
@@ -86,5 +86,42 @@ describe('quest objective', () => {
     expect(objective(d)).toMatchObject({ kind: 'job', night: 2, step: 1 });
     for (let n = 1; n <= 6; n++) d.nights[n] = { finished: true, bestStars: 3, plays: 1 };
     expect(objective(d)).toEqual({ kind: 'done' });
+  });
+});
+
+describe('task order with Unlock All', () => {
+  it('normally only the marked task is open, in path order', () => {
+    const d = defaultSave();
+    expect(openJobs(d, objective(d))).toEqual(['1.1']);
+    const run = startNight(d, 1);
+    run.jobs['1.1'].done = true;
+    expect(openJobs(d, objective(d))).toEqual(['1.2']);
+  });
+
+  it('with Unlock All every unfinished task tonight is open, in any order; the friend still waits for all three', () => {
+    const d = defaultSave();
+    d.flags.allUnlocked = true;
+    expect(openJobs(d, objective(d))).toEqual(['1.1', '1.2', '1.3']);
+    const run = startNight(d, 1);
+    run.jobs['1.3'].done = true; // the last task first
+    expect(doneJobs(d, 1)).toEqual(['1.3']);
+    expect(objective(d)).toMatchObject({ kind: 'job', jobId: '1.1' }); // marker: first task left
+    expect(openJobs(d, objective(d))).toEqual(['1.1', '1.2']);
+    run.jobs['1.1'].done = true;
+    expect(openJobs(d, objective(d))).toEqual(['1.2']);
+    expect(objective(d).kind).toBe('job'); // no friend yet
+    run.jobs['1.2'].done = true;
+    expect(objective(d)).toMatchObject({ kind: 'friend', night: 1 });
+    expect(openJobs(d, objective(d))).toEqual([]);
+  });
+
+  it('works on any night, and each task sign is at its own spot on the path', () => {
+    const d = defaultSave();
+    d.flags.allUnlocked = true;
+    startNight(d, 5);
+    expect(openJobs(d, objective(d))).toEqual(['2.4', '2.5', '2.6']);
+    const pts = ['2.4', '2.5', '2.6'].map((j) => jobPoint(5, j));
+    expect(dist(pts[0], pts[1])).toBeGreaterThan(8);
+    expect(dist(pts[1], pts[2])).toBeGreaterThan(8);
   });
 });

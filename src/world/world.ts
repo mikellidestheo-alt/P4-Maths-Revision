@@ -19,7 +19,9 @@ export interface WorldState {
   objective: Objective;
   /** night shown on the map (current run or next night) */
   night: number | null;
-  stepsDone: number;
+  /** tonight's finished tasks, and the ones that can be started now (more than one with Unlock All) */
+  doneJobs: string[];
+  openJobs: string[];
   rescued: string[]; // friend ids at camp
   friendIds: string[]; // friend id per night (index 0 = night 1)
   dawn: boolean;
@@ -79,6 +81,10 @@ export class World {
   private last = 0;
   private t = 0;
   private nearNow = false;
+  /** open task signs tonight (one normally; all unfinished ones with Unlock All) */
+  private jobSpots: { jobId: string; point: V2 }[] = [];
+  /** the open task the camper is standing at, if any (otherwise "near" means the marker) */
+  nearJob: string | null = null;
   private grid = new Map<string, Collider[]>();
   private colliders: Collider[] = [...CAMP_COLLIDERS];
   private dynColliders: Collider[] = [];
@@ -323,19 +329,22 @@ export class World {
     this.dynColliders = [];
     this.friendNodes = [];
     const o = s.objective;
-    // stations for tonight: done ones (dimmed) and the current one; future ones are hidden
+    // stations for tonight: done ones (dimmed) and open ones (spinning); locked ones are hidden
+    this.jobSpots = [];
     if (s.night) {
       const jobs = s.jobsOfNight(s.night);
       jobs.forEach((jobId, i) => {
-        const step = (i + 1) as 1 | 2 | 3;
-        const isCurrent = o.kind === 'job' && o.step === step;
-        if (i < s.stepsDone || isCurrent) {
+        const isCurrent = s.openJobs.includes(jobId);
+        if (isCurrent) this.jobSpots.push({ jobId, point: along(s.night!, [SPOT_DIST.task1, SPOT_DIST.task2, SPOT_DIST.task3][i]) });
+        if (s.doneJobs.includes(jobId) || isCurrent) {
           const st = makeStation(s.iconFor(jobId));
           const p = besidePath(s.night!, [SPOT_DIST.task1, SPOT_DIST.task2, SPOT_DIST.task3][i]);
           st.position.set(p.x, 0, p.z);
           this.dynColliders.push({ x: p.x, z: p.z, r: PROP_RADIUS });
           st.userData.spin = isCurrent;
           if (!isCurrent) st.add(box(0.6, 0.6, 0.6, '', 0, 1.6, 0, new MeshBasicMaterial({ color: '#7be0a6' })));
+          // other open signs (Unlock All) glow, so they can be spotted without the marker
+          else if (!(o.kind === 'job' && o.jobId === jobId)) st.add(halo('#ffd166', 6, 0, 1.8, 0));
           this.dynamic.add(st);
         }
       });
@@ -400,6 +409,7 @@ export class World {
     this.setDawn(s.dawn);
     this.eyes.forEach((e, i) => (e.visible = !s.dawn && i < (s.spook === 'cosy' ? 2 : s.spook === 'mild' ? 4 : 8)));
     this.nearNow = false;
+    this.nearJob = null;
     this.events.onNear(false);
     this.lastDistReport = -1;
   }
@@ -671,9 +681,17 @@ export class World {
         this.lastDistReport = rep;
         this.events.onDistance(rep);
       }
-      const near = d < 3.4;
-      if (near !== this.nearNow) {
+      // standing at the marker, or (with Unlock All) at any other open task sign
+      let nearJob: string | null = null;
+      let best = 3.4;
+      for (const j of this.jobSpots) {
+        const dj = Math.hypot(j.point.x - this.pos.x, j.point.z - this.pos.z);
+        if (dj < best) { best = dj; nearJob = j.jobId; }
+      }
+      const near = d < 3.4 || !!nearJob;
+      if (near !== this.nearNow || nearJob !== this.nearJob) {
         this.nearNow = near;
+        this.nearJob = nearJob;
         this.events.onNear(near);
       }
     }
