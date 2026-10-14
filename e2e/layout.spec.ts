@@ -177,3 +177,15 @@ test('night picker (after all six nights) fits this viewport and every night can
   }
   await page.screenshot({ path: `e2e/screenshots/${P}--start-pick-end.png` });
 });
+
+test('Unlock All passcode dialog fits this viewport', async ({ page }, testInfo) => {
+  const P = testInfo.project.name;
+  await page.goto('./?bot=1');
+  await page.locator('[data-action="unlock-all"]').click();
+  await expect(page.locator('[data-dialog="unlock"]')).toBeVisible();
+  await page.locator('[data-pass-key="1"]').click();
+  await check(page, 'unlock', P);
+  const vh = await page.evaluate(() => window.innerHeight);
+  const c = (await page.locator('[data-action="unlock-cancel"]').boundingBox())!;
+  expect(c.y + c.height, 'Cancel on screen').toBeLessThanOrEqual(vh + 1);
+});

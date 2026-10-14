@@ -207,6 +207,48 @@ test('start screen: finishing a night unlocks the next one; finished nights can 
   await expect(page.locator('[data-quest]')).toContainText('Night 3 of 6');
 });
 
+test('Unlock All: the passcode opens every night; a wrong code does nothing; it is remembered', async ({ page }) => {
+  await page.goto('./?bot=1');
+  const btn = page.locator('[data-action="unlock-all"]');
+  await expect(btn).toHaveText(/Unlock All/);
+  // wrong code (tapped on the keypad): nothing opens
+  await btn.click();
+  const dlg = page.locator('[data-dialog="unlock"]');
+  await expect(dlg).toBeVisible();
+  for (const k of ['4', '3', '2', '1']) await dlg.locator(`[data-pass-key="${k}"]`).click();
+  await expect(dlg.locator('.pass-status')).toContainText('not the code');
+  await expect(dlg.locator('.pass-dot.on')).toHaveCount(0);
+  await dlg.locator('[data-action="unlock-cancel"]').click();
+  await expect(dlg).toHaveCount(0);
+  await expect(page.locator('[data-pick-night="2"]')).toBeDisabled();
+  // Esc closes it too, without the start screen reacting
+  await btn.click();
+  await page.keyboard.press('Escape');
+  await expect(dlg).toHaveCount(0);
+  await expect(page.locator('[data-screen="start"]')).toBeVisible();
+  // right code (typed, with a correction): every night opens
+  await btn.click();
+  await page.keyboard.type('19');
+  await page.keyboard.press('Backspace');
+  await page.keyboard.type('234');
+  await expect(dlg).toHaveCount(0);
+  for (let n = 1; n <= 6; n++) await expect(page.locator(`[data-pick-night="${n}"]`)).toBeEnabled();
+  await expect(page.locator('.start-sub')).toContainText('Every night is open');
+  await expect(page.locator('.pick-next')).toHaveCount(1); // only the first unplayed night glows
+  await expect(btn).toHaveCount(0);
+  expect((await readSave(page)).flags.allUnlocked).toBe(true);
+  // remembered after a reload; nothing was marked finished
+  await page.reload();
+  await expect(page.locator('[data-pick-night="6"]')).toBeEnabled();
+  expect(Object.keys((await readSave(page)).nights)).toEqual([]);
+  // jump straight to Night 6
+  await page.locator('[data-pick-night="6"]').click();
+  await expect(page.locator('[data-screen="world"]')).toBeVisible();
+  await expect(page.locator('[data-quest]')).toContainText('Night 6 of 6');
+  // the moons in the game are open too
+  await expect(page.locator('[data-moon="4"]')).toBeEnabled();
+});
+
 test('2D fallback also has the start screen', async ({ page }) => {
   await page.goto('./?bot=1&2d=1');
   await expect(page.locator('[data-screen="start"] svg.scene')).toBeVisible();

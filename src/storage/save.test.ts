@@ -21,7 +21,7 @@ describe('save migration', () => {
     expect((d.nights as Record<string, { finished: boolean }>)['1'].finished).toBe(true);
     expect(d.owned).toContain('decor-rug');
     expect(d.nudge).toBe(1);
-    expect(d.flags).toEqual({ installHintSeen: true, dawnSeen: false });
+    expect(d.flags).toEqual({ installHintSeen: true, dawnSeen: false, allUnlocked: false });
   });
 
   it('rubbish input gives a fresh save', () => {

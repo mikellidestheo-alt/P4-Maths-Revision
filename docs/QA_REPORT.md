@@ -124,6 +124,26 @@ can't be tapped and list their maths; Enter starts Night 1; Continue/In progress
 Nights 1–2 done, Night 3 glows and 4–6 stay locked; the after-all-six picker tests still pass. Layout: fits
 all six sizes, and the Night 1 card is on screen without scrolling. Screenshots reviewed.
 
+## Update — Unlock All (passcode)
+A small **🔓 Unlock All** button sits under the night cards on the title screen (next to "How to play").
+It opens a dialog: "Grown-ups: type the passcode to open every night", four dots and a big-button keypad
+(a keyboard works too: digits, Backspace, Esc). The right code (**1234**, `GAME.unlockCode`) opens all six
+nights and is remembered in the save (`flags.allUnlocked`, added without a schema bump: older saves read
+it as false). Nothing is marked finished: no stars, friends or coins are given, so she still earns them by
+playing. A wrong code gently wobbles and clears, with "That's not the code. Try again." Once unlocked (or
+after a full playthrough) the button disappears. The repo is public, so the code is a gentle gate for a
+child, not a secret.
+- Found and fixed along the way: the Dawn only triggered when Night 6 was the last night finished. With
+  nights open in any order it now triggers whenever the last unfinished night is completed.
+- **Unit tests:** with the flag every night can start, but none counts as finished; the save migrates the
+  new flag as false.
+- **e2e:** wrong code (tapped) does nothing; Cancel and Esc close it; right code (typed, with a Backspace)
+  opens all six nights, only the first unplayed night glows, the button goes, and it survives a reload;
+  Night 6 can be started straight away and the in-game moons are open; with Unlock All, finishing Night 3
+  last still leads to the Dawn.
+- **Layout:** the dialog fits all six sizes (keypad beside the text on a phone held sideways); screenshots
+  reviewed.
+
 ## Deployment status
 - GitHub Pages is enabled (source: GitHub Actions). Every push to `main` runs **Deploy to GitHub
   Pages**: unit tests → build → publish. The first runs failed only because Pages wasn't enabled yet;

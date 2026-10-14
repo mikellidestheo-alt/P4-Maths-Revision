@@ -339,7 +339,7 @@ export function rescueScreen(app: App): Screen {
   return { el, title: 'Rescued!' };
 }
 
-export function checkinScreen(app: App, summary: NightSummary): Screen {
+export function checkinScreen(app: App, _summary: NightSummary): Screen {
   const d = app.data;
   let level: 'easy' | 'right' | 'hard' | null = null;
   const group = (label: string, opts: { v: string; t: string }[], set: (v: string) => void, attr: string) => {
@@ -359,7 +359,8 @@ export function checkinScreen(app: App, summary: NightSummary): Screen {
   done.addEventListener('click', () => {
     applyCheckin(d, level);
     app.save();
-    if (summary.night === 6 && allFinished(d) && !d.flags.dawnSeen) nav.dawn(app);
+    // nights can be finished in any order once Unlock All is used, so this is not always Night 6
+    if (allFinished(d) && !d.flags.dawnSeen) nav.dawn(app);
     else nav.home(app);
   });
   const el = h('div', { class: 'screen checkin', 'data-screen': 'checkin' },

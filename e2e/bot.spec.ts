@@ -68,3 +68,21 @@ test('2D fallback (no WebGL): bot plays all six nights and reaches the Dawn', as
   for (let n = 1; n <= 6; n++) expect(save.nights[n].finished).toBe(true);
   expect(errors).toEqual([]);
 });
+
+test('Unlock All: nights finished out of order still end at the Dawn (2D, last night played is Night 3)', async ({ page }) => {
+  test.setTimeout(10 * 60_000);
+  setTouch(true);
+  await page.goto('./?bot=1&2d=1');
+  await page.evaluate(() => localStorage.setItem('sixNightsCamp.save', JSON.stringify({
+    schemaVersion: 3, flags: { allUnlocked: true },
+    nights: Object.fromEntries([1, 2, 4, 5, 6].map((n) => [n, { finished: true, bestStars: 2, plays: 1 }])),
+  })));
+  await page.reload();
+  await expect(page.locator('[data-pick-night="3"]')).toHaveClass(/pick-next/);
+  await page.locator('[data-pick-night="3"]').click();
+  await expect(page.locator('[data-screen="night"]')).toBeVisible();
+  const r = await playUntil(page, (s) => s === 'dawn');
+  expect(r.seenScreens.at(-1)).toBe('dawn');
+  await expect(page.locator('[data-screen="dawn"]')).toBeVisible();
+  expect((await readSave(page)).nights[3].finished).toBe(true);
+});

@@ -15,6 +15,7 @@ import { play, unlockAudio } from '../../game/audio';
 import { use3D } from './world';
 import { soundButtons } from '../soundButtons';
 import { fullscreenButton } from '../fullscreen';
+import { unlockAllButton } from '../unlockAll';
 import type { World } from '../../world/world';
 import { objective } from '../../world/quest';
 import { stateForWorld } from './world';
@@ -27,6 +28,7 @@ export function startScreen(app: App): Screen {
   const label = inProgress ? `▶ Continue Night ${inProgress}` : '▶ Explore the camp';
   const sub = n === null
     ? 'All six friends are safe! Choose a night to play again:'
+    : d.flags.allUnlocked && !inProgress ? 'Every night is open — pick any one!'
     : n === 1 && !inProgress ? 'Six friends are lost in the forest. Can you find them all?' : `Next: find ${friendOf(inProgress ?? n).name} the ${friendOf(inProgress ?? n).animal}.`;
 
   const stage = h('div', { class: 'start-stage' });
@@ -70,7 +72,7 @@ export function startScreen(app: App): Screen {
     const done = isFinished(d, x.n);
     const open = isUnlocked(d, x.n);
     const here = inProgress === x.n;
-    const isNext = !inProgress && !done && open;
+    const isNext = !inProgress && x.n === n;
     const stars = d.nights[x.n]?.bestStars ?? 0;
     const maths = nightMaths(x.n);
     const status = here ? 'in progress' : done ? `${stars} star${stars === 1 ? '' : 's'}` : open ? 'ready to play' : `locked until Night ${x.n - 1} is finished`;
@@ -112,7 +114,7 @@ export function startScreen(app: App): Screen {
         inProgress ? playBtn : null,
         picker,
         inProgress ? null : playBtn,
-        allDone ? null : how)));
+        allDone ? null : h('div', { class: 'start-extras' }, how, d.flags.allUnlocked ? null : unlockAllButton(app, () => nav.start(app))))));
   const first = inProgress || !nextCard ? (allDone && !inProgress ? picker.querySelector<HTMLElement>('button')! : playBtn) : nextCard;
   setTimeout(() => first.focus({ preventScroll: true }), 50);
   return {

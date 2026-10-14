@@ -29,7 +29,8 @@ written addition/subtraction, triangles, symmetry, reflection).
    circling behind it) with a card for each of the six nights, showing the friend and the three kinds of
    maths in it. At first only Night 1 is open (tap it to play); the others show a padlock until the night
    before is finished. **Continue Night N** appears on top if she stopped partway. There is no setup
-   screen, no account and no grown-ups area.
+   screen, no account and no grown-ups area. To open every night straight away, tap **🔓 Unlock All** on
+   the title screen and enter the passcode **1234** (change it in `src/config/game.ts`).
 2. Add it to the home screen (iPhone/iPad: Share → *Add to Home Screen*; Android: ⋮ → *Add to Home
    screen* / *Install app*). It then works offline.
 3. Controls: joystick (touch) or W A S D / arrow keys (keyboard) to walk, drag to look around,

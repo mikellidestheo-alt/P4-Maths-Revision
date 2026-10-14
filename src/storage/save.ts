@@ -74,7 +74,8 @@ export interface SaveData {
   equipped: Record<string, string>;
   /** -1 easier, 0 normal, +1 harder (from the end-of-night "was the maths…" answer) */
   nudge: number;
-  flags: { installHintSeen: boolean; dawnSeen: boolean };
+  /** allUnlocked: every night opened with the Unlock All passcode */
+  flags: { installHintSeen: boolean; dawnSeen: boolean; allUnlocked: boolean };
 }
 
 export function defaultSave(): SaveData {
@@ -90,7 +91,7 @@ export function defaultSave(): SaveData {
     owned: ['lantern-gold'],
     equipped: { lantern: 'lantern-gold' },
     nudge: 0,
-    flags: { installHintSeen: false, dawnSeen: false },
+    flags: { installHintSeen: false, dawnSeen: false, allUnlocked: false },
   };
 }
 
@@ -119,7 +120,7 @@ export function migrate(raw: unknown): SaveData {
     owned: Array.isArray(r.owned) ? r.owned : base.owned,
     equipped: { ...base.equipped, ...(r.equipped ?? {}) },
     nudge: typeof r.nudge === 'number' ? Math.max(-1, Math.min(1, Math.round(r.nudge))) : 0,
-    flags: { installHintSeen: !!r.flags?.installHintSeen, dawnSeen: !!r.flags?.dawnSeen },
+    flags: { installHintSeen: !!r.flags?.installHintSeen, dawnSeen: !!r.flags?.dawnSeen, allUnlocked: !!r.flags?.allUnlocked },
   };
   if (out.current && (typeof out.current.night !== 'number' || !out.current.jobs)) out.current = null;
   return out;

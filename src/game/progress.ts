@@ -13,7 +13,7 @@ export const isFinished = (d: SaveData, n: number) => !!d.nights[n]?.finished;
 export const allFinished = (d: SaveData) => NIGHTS.every((x) => isFinished(d, x.n));
 
 export function isUnlocked(d: SaveData, n: number): boolean {
-  return n === 1 || isFinished(d, n - 1) || isFinished(d, n);
+  return n === 1 || d.flags.allUnlocked || isFinished(d, n - 1) || isFinished(d, n);
 }
 
 /** The next night to play (first unfinished), or null when all six are done. */

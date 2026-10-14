@@ -25,3 +25,17 @@ describe('night maths list (night picker)', () => {
     expect(nightMaths(6)[2].label).toContain('everything');
   });
 });
+
+describe('Unlock All', () => {
+  it('opens every night without marking any as finished', async () => {
+    const { defaultSave } = await import('../storage/save');
+    const { isUnlocked, canStart, nextNight, allFinished } = await import('./progress');
+    const d = defaultSave();
+    expect(NIGHTS.map((x) => isUnlocked(d, x.n))).toEqual([true, false, false, false, false, false]);
+    d.flags.allUnlocked = true;
+    expect(NIGHTS.every((x) => isUnlocked(d, x.n))).toBe(true);
+    expect(canStart(d, 6)).toEqual({ ok: true, replay: false, resume: false });
+    expect(nextNight(d)).toBe(1);
+    expect(allFinished(d)).toBe(false);
+  });
+});

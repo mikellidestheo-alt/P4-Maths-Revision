@@ -15,6 +15,9 @@ no backend, no analytics. UK English, age 8–9 reading level, cosy (never scary
 5. Never commit personal data (the repo is public).
 6. There is deliberately **no grown-ups/parent area** (removed at the owner's request): no PIN,
    nickname, settings screen or report. Game rules that were settings live in `src/config/game.ts`.
+   The one exception (also the owner's request): an **Unlock All** button on the title screen, behind a
+   passcode (`GAME.unlockCode`, `src/ui/unlockAll.ts`), which sets `flags.allUnlocked`. The repo is public,
+   so the code is a gentle gate, not a secret.
 7. There is deliberately **no daily night limit** and no "come back tomorrow" screen (owner's request).
 
 ## Architecture
@@ -36,7 +39,7 @@ no backend, no analytics. UK English, age 8–9 reading level, cosy (never scary
   `src/ui/screens/world.ts` is the HUD and falls back to the 2D camp when WebGL is missing (`?2d=1` forces it).
   `src/ui/screens/start.ts` is the title screen the app boots into; it shows the same World in `attract` mode
   (camera orbits the camp, no input, no quest beam). It shows a card per night listing the night's maths
-  (`nightMaths(n)` in `game/nights.ts`); cards follow `isUnlocked` (story order), and all open after a full playthrough. Screens must only unmount the World if it is still in
+  (`nightMaths(n)` in `game/nights.ts`); cards follow `isUnlocked` (story order), and all open after a full playthrough or Unlock All. Screens must only unmount the World if it is still in
   their own stage (the next screen may already have taken it).
 - `src/game/music.ts` — background music synthesised live with Web Audio (no audio files). The notes come
   from `musicScore.ts` (pure, unit-tested): a slow 3/4 lullaby; mood `camp`, `focus` (questions: same song,
