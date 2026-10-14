@@ -102,6 +102,51 @@ test('full screen button is left out where the browser has no full screen (iPhon
   await expect(page.locator('[data-action="fullscreen"]')).toHaveCount(0);
 });
 
+test('after all six nights: the start screen lists each night with its maths; tapping one plays it', async ({ page }) => {
+  await page.goto('./?bot=1');
+  await page.evaluate((k) => localStorage.setItem(k, JSON.stringify({
+    schemaVersion: 3, nights: Object.fromEntries([1, 2, 3, 4, 5, 6].map((n) => [n, { finished: true, bestStars: n % 3 + 1, plays: 1 }])), flags: { dawnSeen: true },
+  })), KEY);
+  await page.reload();
+  const cards = page.locator('[data-pick-night]');
+  await expect(cards).toHaveCount(6);
+  await expect(page.locator('.start-sub')).toContainText('Choose a night');
+  await expect(cards.nth(0)).toContainText('Bramble the hedgehog');
+  await expect(cards.nth(0)).toContainText('Numbers to one million');
+  await expect(cards.nth(2)).toContainText('Parallel and perpendicular lines');
+  await expect(cards.nth(2)).toContainText('Review: a mix of Nights 1–3');
+  await expect(cards.nth(5)).toContainText('Final challenge: a bit of everything');
+  await expect(page.locator('[data-action="play"]')).toHaveText(/Explore the camp/);
+  // pick Night 3: straight into the forest with Night 3's first job
+  await page.locator('[data-pick-night="3"]').click();
+  await expect(page.locator('[data-screen="world"]')).toBeVisible();
+  await expect(page.locator('[data-quest]')).toContainText('Night 3 of 6');
+  await expect(page.locator('[data-quest]')).toContainText('Task 1 of 3');
+  // come back later: Continue is offered, Night 3 is marked, and picking another night asks first
+  await page.reload();
+  await expect(page.locator('[data-action="play"]')).toHaveText(/Continue Night 3/);
+  await expect(page.locator('[data-pick-night="3"]')).toContainText('In progress');
+  await page.locator('[data-pick-night="5"]').click();
+  await expect(page.locator('.modal')).toContainText('partway through Night 3');
+  await page.locator('[data-modal="Play Night 5"]').click();
+  await expect(page.locator('[data-screen="world"]')).toBeVisible();
+  await expect(page.locator('[data-quest]')).toContainText('Night 5 of 6');
+  // stars are kept
+  expect((await readSave(page)).nights[3].bestStars).toBe(1);
+});
+
+test('2D: after all six nights the night list opens the chosen night', async ({ page }) => {
+  await page.goto('./?bot=1&2d=1');
+  await page.evaluate((k) => localStorage.setItem(k, JSON.stringify({
+    schemaVersion: 3, nights: Object.fromEntries([1, 2, 3, 4, 5, 6].map((n) => [n, { finished: true, bestStars: 2, plays: 1 }])), flags: { dawnSeen: true },
+  })), KEY);
+  await page.reload();
+  await expect(page.locator('[data-pick-night]')).toHaveCount(6);
+  await page.locator('[data-pick-night="4"]').click();
+  await expect(page.locator('[data-screen="night"]')).toBeVisible();
+  await expect(page.locator('[data-screen="night"]')).toContainText('Adding in your head');
+});
+
 test('3D: the marker moves along the path; closing mid-job resumes at the same task', async ({ page }) => {
   await open(page, './?bot=1');
   await expect(page.locator('[data-screen="world"]')).toBeVisible();

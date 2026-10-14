@@ -612,3 +612,31 @@ svg { display: block; }
   .start-moons .moon { width: 42px; height: 42px; }
   .btn-play { font-size: 1.5rem; min-height: 72px; }
 }
+
+/* ---------- start screen: choose a night (after all six are done) ---------- */
+.start-picking .start-overlay { background: linear-gradient(rgba(10, 8, 30, 0) 10%, rgba(10, 8, 30, 0.85) 45%); }
+.start-picking .start-panel { min-height: 0; overflow-y: auto; -webkit-overflow-scrolling: touch; gap: 10px; }
+.start-picking .start-title { font-size: clamp(1.8rem, 7vw, 2.8rem); }
+.night-pick { display: grid; grid-template-columns: 1fr; gap: 10px; width: 100%; max-width: 1100px; }
+@media (min-width: 560px) { .night-pick { grid-template-columns: repeat(2, 1fr); } }
+@media (min-width: 900px) { .night-pick { grid-template-columns: repeat(3, 1fr); } }
+.pick-card {
+  display: flex; flex-direction: column; gap: 6px; text-align: left; color: var(--text); font: inherit; cursor: pointer;
+  padding: 10px 12px; min-height: 44px; border-radius: 16px; border: 2px solid rgba(255, 209, 102, 0.35);
+  background: rgba(14, 12, 40, 0.88); touch-action: manipulation;
+}
+.pick-card:hover, .pick-card:focus-visible { border-color: var(--gold); background: rgba(30, 24, 70, 0.95); }
+.pick-here { border-color: var(--good); }
+.pick-head { display: flex; align-items: center; gap: 10px; }
+.pick-head .moon { width: 36px; height: 36px; margin: 0; flex: none; }
+.pick-name { display: flex; flex-direction: column; line-height: 1.2; }
+.pick-name strong { color: var(--gold); font-size: 1.1rem; }
+.pick-stars { margin-left: auto; color: var(--gold); letter-spacing: 1px; white-space: nowrap; }
+.pick-topics { display: flex; flex-direction: column; gap: 4px; font-size: 0.95rem; }
+.pick-topic { display: flex; align-items: center; gap: 8px; }
+.pick-topic .job-icon { width: 24px; height: 24px; flex: none; }
+.pick-badge { align-self: flex-start; font-size: 0.8rem; font-weight: 700; padding: 2px 10px; border-radius: 999px; background: var(--good); color: #0b2a14; }
+.btn-play-quiet { max-width: 360px; background: rgba(14, 12, 40, 0.88); }
+@media (max-height: 480px) {
+  .start-picking .start-sub { display: block; font-size: 1rem; }
+}

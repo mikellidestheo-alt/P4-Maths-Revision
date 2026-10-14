@@ -95,6 +95,23 @@ already opens it without the browser bars). Verified (e2e): the button toggles f
 full screen carries on from the start screen into the game, the button follows when full screen is left
 another way, and it is left out when the browser has no full screen. Layout tests pass at all six sizes.
 
+## Update — choose a night (after the first round)
+Once all six nights are finished, the start screen shows "All six friends are safe! Choose a night to
+play again:" and six cards. Each card has the night number, the friend, her best stars for it and the three
+kinds of maths in it, with the same job icons as the forest signs (reviews say which nights they mix, e.g.
+"Review: a mix of Nights 1–3"; Night 6 ends with "Final challenge: a bit of everything"). Tapping a card
+goes straight into that night (3D: the marker leads to its first task; 2D: that night's camp screen).
+"Explore the camp" stays underneath. If a replay is half done, "Continue Night N" sits on top, that card
+is marked "In progress", and choosing a different night asks first (stars are always kept). Before the
+first round is complete the start screen is unchanged. Verified:
+- **Unit tests:** every night lists its jobs in play order with the real topic titles; the review labels
+  match the nights their questions actually come from.
+- **e2e (3D and 2D):** the list appears only after all six nights; card contents; picking Night 3 starts
+  Night 3; Continue/In progress after a reload; switching to Night 5 asks first and keeps stars.
+- **Layout:** the list fits all six sizes with no sideways scrolling; it scrolls where the screen is short
+  (phones, landscape) and every card and "Explore the camp" can be reached; one column on phones, two on
+  tablets in portrait, three on wider screens. Screenshots reviewed.
+
 ## Deployment status
 - GitHub Pages is enabled (source: GitHub Actions). Every push to `main` runs **Deploy to GitHub
   Pages**: unit tests → build → publish. The first runs failed only because Pages wasn't enabled yet;

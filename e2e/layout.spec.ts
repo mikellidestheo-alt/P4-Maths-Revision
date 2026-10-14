@@ -156,3 +156,23 @@ test('2D fallback screens fit this viewport', async ({ page }, testInfo) => {
   await page.waitForSelector('[data-screen="night"]');
   await check(page, '2d-night', P);
 });
+
+test('night picker (after all six nights) fits this viewport and every night can be reached', async ({ page }, testInfo) => {
+  const P = testInfo.project.name;
+  await page.goto('./?bot=1');
+  await page.evaluate(() => localStorage.setItem('sixNightsCamp.save', JSON.stringify({
+    schemaVersion: 3, nights: Object.fromEntries([1, 2, 3, 4, 5, 6].map((n) => [n, { finished: true, bestStars: n % 3 + 1, plays: 1 }])), flags: { dawnSeen: true },
+  })));
+  await page.reload();
+  await expect(page.locator('[data-pick-night]')).toHaveCount(6);
+  await page.waitForTimeout(600);
+  await check(page, 'start-pick', P);
+  const vh = await page.evaluate(() => window.innerHeight);
+  for (const sel of ['[data-pick-night="1"]', '[data-pick-night="6"]', '[data-action="play"]']) {
+    await page.locator(sel).scrollIntoViewIfNeeded();
+    const b = (await page.locator(sel).boundingBox())!;
+    expect(b.y, `${sel} top on screen`).toBeGreaterThanOrEqual(-1);
+    expect(b.y + Math.min(b.height, 60), `${sel} reachable`).toBeLessThanOrEqual(vh + 1);
+  }
+  await page.screenshot({ path: `e2e/screenshots/${P}--start-pick-end.png` });
+});

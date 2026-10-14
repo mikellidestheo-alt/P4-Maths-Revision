@@ -75,3 +75,14 @@ export const JOB_ICON: Record<string, string> = {
   '1.1': 'crate', '1.2': 'sign', '1.3': 'shelf', '1.4': 'pot', '1.5': 'gate', '1.6': 'clock', '1.7': 'fence', '1.8': 'map', R1: 'star',
   '2.1': 'fire', '2.2': 'basket', '2.3': 'book', '2.4': 'book', '2.5': 'tent', '2.6': 'lantern', '2.7': 'mirror', R2: 'star', F: 'sun',
 };
+
+const REVIEW_LABEL: Record<string, string> = {
+  R1: 'Review: a mix of Nights 1–3',
+  R2: 'Review: a mix of Nights 4–6',
+  F: 'Final challenge: a bit of everything',
+};
+
+/** The kinds of maths in a night, in play order (shown when choosing a night to replay). */
+export function nightMaths(n: number): { id: string; label: string }[] {
+  return NIGHTS[n - 1].jobs.map((id) => ({ id, label: REVIEW_LABEL[id] ?? jobDef(id).title }));
+}

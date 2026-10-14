@@ -36,7 +36,9 @@ written addition/subtraction, triangles, symmetry, reflection).
    iPhone, where Safari doesn't allow it — add it to the home screen instead).
 
 There is **no limit on nights**: she can play as many as she likes in one go. Nights open in story
-order (Night 2 after Night 1, and so on), and finished nights can always be replayed.
+order (Night 2 after Night 1, and so on), and finished nights can always be replayed. Once all six are
+done, the start screen becomes a **choose a night** list: each night shows its friend, best stars and the
+three kinds of maths in it (e.g. "Time intervals", "Review: a mix of Nights 1–3"), and tapping one plays it.
 Spookiness is set in **`src/config/game.ts`**.
 
 ## Developing
