@@ -31,7 +31,7 @@ export function use3D(app: App): boolean {
   return app.world3d;
 }
 
-function stateFor(app: App, o: Objective): WorldState {
+export function stateForWorld(app: App, o: Objective): WorldState {
   const d = app.data;
   const night = o.kind === 'done' ? null : o.night;
   return {
@@ -77,9 +77,9 @@ export function worldScreen(app: App): Screen {
     app.save();
   }
   const o = objective(d);
-  world.setState(stateFor(app, o));
+  world.setState(stateForWorld(app, o));
   void preloadIcons().then(() => {
-    if (app.current?.el === el) world.setState(stateFor(app, objective(d)));
+    if (app.current?.el === el) world.setState(stateForWorld(app, objective(d)));
   });
 
   const q = questText(app, o);
@@ -209,7 +209,8 @@ export function worldScreen(app: App): Screen {
     },
     destroy: () => {
       window.removeEventListener('keyup', keyup);
-      world.unmount();
+      // the next screen may already have taken the 3D view (e.g. world → world after tapping a moon)
+      if (stage.contains(world.container)) world.unmount();
     },
   };
 }

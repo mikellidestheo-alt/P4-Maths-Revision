@@ -3,6 +3,7 @@ import type { NightSummary } from '../game/progress';
 
 /** Screen routes. Filled in by screens/index.ts (avoids import cycles between screens). */
 export const nav = {
+  start: (_app: App) => {},
   home: (_app: App) => {},
   night: (_app: App, _n: number) => {},
   job: (_app: App, _jobId: string) => {},

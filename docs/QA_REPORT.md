@@ -53,6 +53,19 @@ on a dark forest backdrop. Verified:
   screen. Real phones/tablets draw on the GPU and should be much smoother, but this has **not** been
   checked on a real device. The trees are 2 instanced draw calls; pixel ratio is capped at 1.5.
 
+## Update — start screen
+The game now opens on a title screen: "6 Nights at Camp", the six moons (filled for rescued friends),
+one big Play button (**Start** / **Continue Night N** / **Play Night N** / **Explore the camp**, Enter
+also works), a sound toggle and a short "How to play". Behind it the real 3D camp circles slowly
+(no quest beam, no input); without WebGL it shows the 2D camp. Verified:
+- Start screen at all six viewports: title, moons and Play button fit with no scrolling and the Play
+  button is ≥44px; screenshots reviewed.
+- Play goes to the 3D world (or the 2D camp with `?2d=1`); the label follows progress; every e2e spec
+  (bot playthroughs 3D and 2D, wrong-answer flow, storage, offline, widgets) now starts from this screen.
+- Found and fixed while doing this: going from the world to the world (tapping a moon) unmounted the
+  shared 3D world, leaving a blank screen. Screens now only unmount it if it is still theirs; covered by
+  a new test.
+
 ## Deployment status
 - GitHub Pages is enabled (source: GitHub Actions). Every push to `main` runs **Deploy to GitHub
   Pages**: unit tests → build → publish. The first runs failed only because Pages wasn't enabled yet;

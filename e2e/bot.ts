@@ -266,8 +266,22 @@ export async function screen(page: Page): Promise<string> {
   return (await page.locator('[data-screen]').first().getAttribute('data-screen')) ?? '';
 }
 
-/** The game opens straight on the camp (there is no setup screen). */
+/** The game opens on the start screen: press the real Play button. */
+export async function pressPlay(page: Page) {
+  await page.waitForSelector('[data-screen="start"]');
+  await page.locator('[data-action="play"]').click();
+  await page.waitForSelector('[data-screen="home"], [data-screen="world"]');
+}
+export async function open(page: Page, url: string) {
+  await page.goto(url);
+  await pressPlay(page);
+}
+export async function reopen(page: Page) {
+  await page.reload();
+  await pressPlay(page);
+}
 export async function openGame(page: Page) {
+  if (await page.locator('[data-screen="start"]').count()) await pressPlay(page);
   await page.waitForSelector('[data-screen="home"], [data-screen="world"]');
 }
 

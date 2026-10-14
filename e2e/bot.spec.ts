@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { playUntil, readSave, setTouch, openGame } from './bot';
+import { playUntil, readSave, setTouch, openGame, open, reopen } from './bot';
 
 async function playNight(page: Page, n: number) {
   await expect(page.locator('[data-screen="world"]')).toBeVisible();
@@ -14,7 +14,7 @@ test('bot plays all six nights in the 3D world through the real UI and reaches t
   setTouch(true);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(String(e)));
-  await page.goto('./?bot=1');
+  await open(page, './?bot=1');
   await openGame(page);
 
   const types = new Set<string>();
@@ -55,7 +55,7 @@ test('2D fallback (no WebGL): bot plays all six nights and reaches the Dawn', as
   setTouch(true);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(String(e)));
-  await page.goto('./?bot=1&2d=1');
+  await open(page, './?bot=1&2d=1');
   await openGame(page);
   for (let n = 1; n <= 6; n++) {
     await expect(page.locator('[data-tonight]')).toHaveAttribute('data-tonight', String(n));

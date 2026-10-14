@@ -1,3 +1,4 @@
+import { open, reopen } from './bot';
 import { test, expect, type Page } from '@playwright/test';
 
 const PREVIEWS: [string, string, 1 | 2 | 3, string][] = [
@@ -72,6 +73,15 @@ test('screens and every interaction fit this viewport', async ({ page }, testInf
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(String(e)));
   await page.goto('./?bot=1');
+  await page.waitForSelector('[data-screen="start"]');
+  await page.waitForTimeout(600);
+  await check(page, 'start', P);
+  {
+    const vh0 = await page.evaluate(() => window.innerHeight);
+    const pb = (await page.locator('[data-action="play"]').boundingBox())!;
+    expect(pb.y + pb.height, 'Play button on screen').toBeLessThanOrEqual(vh0 + 1);
+  }
+  await page.locator('[data-action="play"]').click();
   await page.waitForSelector('[data-screen="world"]');
   await page.waitForTimeout(800);
   await check(page, 'world', P);
@@ -139,7 +149,7 @@ test('screens and every interaction fit this viewport', async ({ page }, testInf
 
 test('2D fallback screens fit this viewport', async ({ page }, testInfo) => {
   const P = testInfo.project.name;
-  await page.goto('./?bot=1&2d=1');
+  await open(page, './?bot=1&2d=1');
   await page.waitForSelector('[data-screen="home"]');
   await check(page, '2d-home', P);
   await page.click('[data-action="start"]');

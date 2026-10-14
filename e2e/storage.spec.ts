@@ -1,5 +1,5 @@
 import { test, expect, type Page } from '@playwright/test';
-import { openGame, playQuestion, readSave, setTouch, walkAndInteract } from './bot';
+import { openGame, playQuestion, readSave, setTouch, walkAndInteract, open, reopen } from './bot';
 
 const KEY = 'sixNightsCamp.save';
 
@@ -8,7 +8,7 @@ async function inject(page: Page, patch: Record<string, unknown>) {
     const cur = JSON.parse(localStorage.getItem(k as string) || '{}');
     localStorage.setItem(k as string, JSON.stringify({ ...cur, ...(p as object) }));
   }, [KEY, patch] as const);
-  await page.reload();
+  await reopen(page);
 }
 
 const done = (stars = 2) => ({ finished: true, bestStars: stars, plays: 1 });
@@ -16,7 +16,7 @@ const done = (stars = 2) => ({ finished: true, bestStars: stars, plays: 1 });
 test.beforeEach(() => setTouch(true));
 
 test('first visit goes straight into the 3D camp; there is no grown-ups area', async ({ page }) => {
-  await page.goto('./?bot=1');
+  await open(page, './?bot=1');
   await expect(page.locator('[data-screen="world"]')).toBeVisible();
   await expect(page.locator('[data-quest]')).toContainText('Night 1 of 6');
   await expect(page.locator('[data-quest]')).toContainText('Task 1 of 3: Label the supply crates');
@@ -26,11 +26,11 @@ test('first visit goes straight into the 3D camp; there is no grown-ups area', a
 });
 
 test('3D: the marker moves along the path; closing mid-job resumes at the same task', async ({ page }) => {
-  await page.goto('./?bot=1');
+  await open(page, './?bot=1');
   await expect(page.locator('[data-screen="world"]')).toBeVisible();
   await walkAndInteract(page);
   for (let i = 0; i < 3; i++) await playQuestion(page);
-  await page.reload();
+  await reopen(page);
   await expect(page.locator('[data-quest]')).toContainText('Task 1 of 3');
   await walkAndInteract(page);
   await expect(page.locator('.dot.done')).toHaveCount(3);
@@ -42,8 +42,48 @@ test('3D: the marker moves along the path; closing mid-job resumes at the same t
   expect(Math.hypot(w.t.x, w.t.z)).toBeGreaterThan(Math.hypot(w.p.x, w.p.z) + 8);
 });
 
-test('3D: walking with the keyboard moves the camper', async ({ page }) => {
+test('start screen: title, Play, Continue mid-night; Enter also starts', async ({ page }) => {
   await page.goto('./?bot=1');
+  await expect(page.locator('[data-screen="start"]')).toBeVisible();
+  await expect(page.locator('.start-title')).toContainText('Nights at Camp');
+  await expect(page.locator('[data-action="play"]')).toHaveText(/Start/);
+  await expect(page.locator('.start-moons .moon')).toHaveCount(6);
+  await page.locator('[data-action="play"]').click();
+  await expect(page.locator('[data-screen="world"]')).toBeVisible();
+  await walkAndInteract(page);
+  await playQuestion(page);
+  await page.reload();
+  await expect(page.locator('[data-action="play"]')).toHaveText(/Continue Night 1/);
+  await page.keyboard.press('Enter');
+  await expect(page.locator('[data-screen="world"]')).toBeVisible();
+  await expect(page.locator('.world-canvas canvas')).toBeVisible();
+});
+
+test('2D fallback also has the start screen', async ({ page }) => {
+  await page.goto('./?bot=1&2d=1');
+  await expect(page.locator('[data-screen="start"] svg.scene')).toBeVisible();
+  await page.locator('[data-action="play"]').click();
+  await expect(page.locator('[data-screen="home"]')).toBeVisible();
+});
+
+test('3D: tapping a moon (replay or next night) keeps the 3D view showing', async ({ page }) => {
+  await open(page, './?bot=1');
+  await inject(page, { nights: { 1: done() } });
+  await expect(page.locator('[data-quest]')).toContainText('Night 2 of 6');
+  await page.locator('[data-moon="1"]').click();
+  await page.locator('[data-modal="Replay Night 1"]').click();
+  await expect(page.locator('[data-quest]')).toContainText('Night 1 of 6');
+  await expect(page.locator('[data-quest]')).toContainText('(replay)');
+  await expect(page.locator('.world-canvas canvas')).toBeVisible();
+  const moving = await page.evaluate(() => new Promise<boolean>((r) => {
+    const w = (window as any).__campWorld; const t0 = w.camera.position.clone(); w.camYaw += 1;
+    setTimeout(() => r(w.camera.position.distanceTo(t0) > 0.1), 600);
+  }));
+  expect(moving, 'the 3D view is still running').toBe(true);
+});
+
+test('3D: walking with the keyboard moves the camper', async ({ page }) => {
+  await open(page, './?bot=1');
   await expect(page.locator('[data-screen="world"]')).toBeVisible();
   const before = await page.evaluate(() => ({ ...(window as any).__campWorld.pos }));
   await page.keyboard.down('ArrowUp');
@@ -54,7 +94,7 @@ test('3D: walking with the keyboard moves the camper', async ({ page }) => {
 });
 
 test('no night limit: after five nights today, Night 6 can start straight away; replays always work', async ({ page }) => {
-  await page.goto('./?bot=1&2d=1');
+  await open(page, './?bot=1&2d=1');
   await openGame(page);
   await inject(page, { nights: { 1: done(), 2: done(), 3: done(), 4: done(), 5: done() } });
   await expect(page.locator('[data-action="start"]')).toHaveText(/Start Night 6/);
@@ -65,7 +105,7 @@ test('no night limit: after five nights today, Night 6 can start straight away; 
 });
 
 test('story order still applies: a later night opens when the one before is finished', async ({ page }) => {
-  await page.goto('./?bot=1&2d=1');
+  await open(page, './?bot=1&2d=1');
   await openGame(page);
   await expect(page.locator('[data-moon="2"]')).toBeDisabled();
   await inject(page, { nights: { 1: done() } });
@@ -79,7 +119,7 @@ test('works with storage blocked (private mode) and says progress will not be sa
   await page.addInitScript(() => {
     Object.defineProperty(window, 'localStorage', { get() { throw new Error('SecurityError: storage blocked'); } });
   });
-  await page.goto('./?bot=1&2d=1');
+  await open(page, './?bot=1&2d=1');
   await openGame(page);
   await expect(page.locator('.warn-note')).toBeVisible();
   await page.locator('[data-action="start"]').tap();
@@ -93,15 +133,15 @@ test('works with storage blocked (private mode) and says progress will not be sa
 test('a corrupted save does not crash the game; an old save is migrated', async ({ page }) => {
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(String(e)));
-  await page.goto('./?bot=1&2d=1');
+  await open(page, './?bot=1&2d=1');
   await page.evaluate((k) => localStorage.setItem(k, '{"schemaVersion":1, "nights": {broken'), KEY);
-  await page.reload();
+  await reopen(page);
   await expect(page.locator('[data-action="start"]')).toHaveText(/Start Night 1/);
   const backup = await page.evaluate((k) => localStorage.getItem(k + '.corrupt'), KEY);
   expect(backup).toContain('broken');
   // a v1 save from before the grown-ups area was removed keeps its progress
   await page.evaluate((k) => localStorage.setItem(k, JSON.stringify({ schemaVersion: 1, setupDone: true, pin: '1234', nickname: 'Robin', coins: 12, nights: { 1: { finished: true, bestStars: 1, plays: 1 } } })), KEY);
-  await page.reload();
+  await reopen(page);
   await expect(page.locator('[data-coins]')).toHaveText('12');
   await expect(page.locator('[data-tonight]')).toHaveAttribute('data-tonight', '2');
   const save = await readSave(page);
@@ -112,12 +152,12 @@ test('a corrupted save does not crash the game; an old save is migrated', async 
 });
 
 test('2D fallback: closing the app mid-night resumes where she left off', async ({ page }) => {
-  await page.goto('./?bot=1&2d=1');
+  await open(page, './?bot=1&2d=1');
   await openGame(page);
   await page.locator('[data-action="start"]').tap();
   await page.locator('[data-job="1.1"]').tap();
   for (let i = 0; i < 3; i++) await playQuestion(page);
-  await page.reload();
+  await reopen(page);
   await expect(page.locator('[data-action="start"]')).toHaveText(/Continue Night 1/);
   await page.locator('[data-action="start"]').tap();
   await expect(page.locator('[data-job="1.1"]')).toContainText('3/10 done');

@@ -25,8 +25,9 @@ written addition/subtraction, triangles, symmetry, reflection).
 
 ## Handing it over
 
-1. Open the link on the phone/tablet/laptop she'll use. It opens straight on the camp — there is no
-   setup screen, no account and no grown-ups area.
+1. Open the link on the phone/tablet/laptop she'll use. It opens on a title screen (the 3D camp slowly
+   circling behind it) with one big **Start** button — it says **Continue Night N** or **Play Night N**
+   once she has begun. There is no setup screen, no account and no grown-ups area.
 2. Add it to the home screen (iPhone/iPad: Share → *Add to Home Screen*; Android: ⋮ → *Add to Home
    screen* / *Install app*). It then works offline.
 3. Controls: joystick (touch) or W A S D / arrow keys (keyboard) to walk, drag to look around,

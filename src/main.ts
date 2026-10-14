@@ -36,7 +36,7 @@ function boot() {
     };
   }
   document.documentElement.dataset.build = __BUILD_ID__;
-  nav.home(app);
+  nav.start(app);
   registerSW();
 }
 

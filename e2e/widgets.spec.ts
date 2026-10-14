@@ -1,5 +1,5 @@
 import { test, expect, type Page, type Locator } from '@playwright/test';
-import { enterAnswer, info, setTouch, openGame } from './bot';
+import { enterAnswer, info, setTouch, openGame, open, reopen } from './bot';
 
 async function preview(page: Page, topic: string, kind: string, tier: 1 | 2 | 3, seed = 5) {
   await page.evaluate(([t, k, tr, sd]) => (window as any).__campPreview(t, k, tr, sd), [topic, kind, tier, seed] as const);
@@ -26,7 +26,7 @@ const centre = async (l: Locator) => { const b = (await l.boundingBox())!; retur
 
 test.beforeEach(async ({ page }, ti) => {
   setTouch(ti.project.name !== 'laptop-game');
-  await page.goto('./?bot=1');
+  await open(page, './?bot=1');
   await openGame(page);
 });
 

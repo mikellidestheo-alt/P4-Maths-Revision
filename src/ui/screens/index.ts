@@ -2,7 +2,9 @@ import { nav } from '../nav';
 import { campfireScreen, checkinScreen, dawnScreen, homeScreen, jobScreen, nightScreen, recapScreen, rescueScreen } from './game';
 import { friendsScreen, shopScreen } from './extras';
 import { use3D, worldScreen } from './world';
+import { startScreen } from './start';
 
+nav.start = (app) => app.show(startScreen(app));
 nav.home = (app) => app.show(use3D(app) ? worldScreen(app) : homeScreen(app));
 nav.night = (app, n) => app.show(use3D(app) ? worldScreen(app) : nightScreen(app, n));
 nav.job = (app, id) => app.show(jobScreen(app, id));

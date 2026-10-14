@@ -1,4 +1,5 @@
 import { test, expect } from '@playwright/test';
+import { pressPlay } from './bot';
 import { execSync } from 'node:child_process';
 import { cpSync, mkdtempSync, rmSync, readFileSync, existsSync, statSync } from 'node:fs';
 import { createServer, type Server } from 'node:http';
@@ -33,6 +34,7 @@ test('works offline after the first visit, and picks up a new deploy cleanly', a
   const url = 'http://localhost:4180/P4-Maths-Revision/';
   try {
     await page.goto(url);
+    await pressPlay(page);
     await expect(page.locator('[data-screen="world"]')).toBeVisible();
     await page.waitForFunction(async () => { const r = await navigator.serviceWorker.ready; return !!r.active; });
     await page.reload();
@@ -42,6 +44,7 @@ test('works offline after the first visit, and picks up a new deploy cleanly', a
     // offline: the whole game still loads and plays
     await ctx.setOffline(true);
     await page.reload();
+    await pressPlay(page);
     await expect(page.locator('[data-screen="world"]')).toBeVisible();
     await expect(page.locator('.world-canvas canvas')).toBeVisible();
     await page.click('[data-action="autowalk"]');
@@ -56,12 +59,14 @@ test('works offline after the first visit, and picks up a new deploy cleanly', a
     cpSync(b, live, { recursive: true });
     await page.goto(url);
     expect(await page.getAttribute('html', 'data-build')).toBe('deployB');
+    await expect(page.locator('[data-screen="start"]')).toBeVisible();
     // the new service worker takes over and old caches are cleared
     await page.waitForFunction(async () => (await caches.keys()).includes('camp-deployB') && !(await caches.keys()).includes('camp-deployA'), null, { timeout: 30_000 });
     // and offline now serves the new version, never the stale one
     await ctx.setOffline(true);
     await page.reload();
     expect(await page.getAttribute('html', 'data-build')).toBe('deployB');
+    await pressPlay(page);
     await expect(page.locator('[data-screen="world"]')).toBeVisible();
   } finally {
     await ctx.close();

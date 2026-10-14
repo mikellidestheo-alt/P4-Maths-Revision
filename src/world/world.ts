@@ -72,6 +72,8 @@ export class World {
   autoGoal: V2 | null = null;
   events: WorldEvents = { onNear: () => {}, onDistance: () => {}, onArrive: () => {} };
   state: WorldState | null = null;
+  /** title-screen mode: the camera slowly circles the camp and the camper stands still */
+  attract = false;
   private running = false;
   private raf = 0;
   private last = 0;
@@ -529,6 +531,11 @@ export class World {
   }
 
   private snapCamera() {
+    if (this.attract) {
+      this.camera.position.set(Math.sin(this.t * 0.07) * 19, 8.5, Math.cos(this.t * 0.07) * 19);
+      this.camera.lookAt(0, 1.6, 0);
+      return;
+    }
     const cy = Math.sin(this.camPitch) * this.camDist, ch = Math.cos(this.camPitch) * this.camDist;
     this.camera.position.set(this.pos.x + Math.sin(this.camYaw) * ch, 1.6 + cy, this.pos.z + Math.cos(this.camYaw) * ch);
     this.camera.lookAt(this.pos.x, 2, this.pos.z);
@@ -549,11 +556,14 @@ export class World {
   private update(dt: number) {
     this.t += dt;
     // --- input direction (camera relative) ---
-    let ix = this.joy.x, iy = -this.joy.y;
-    if (this.keys.has('w') || this.keys.has('arrowup')) iy += 1;
-    if (this.keys.has('s') || this.keys.has('arrowdown')) iy -= 1;
-    if (this.keys.has('a') || this.keys.has('arrowleft')) ix -= 1;
-    if (this.keys.has('d') || this.keys.has('arrowright')) ix += 1;
+    let ix = this.attract ? 0 : this.joy.x, iy = this.attract ? 0 : -this.joy.y;
+    if (this.attract) this.auto = null;
+    if (!this.attract && (this.keys.has('w') || this.keys.has('arrowup'))) iy += 1;
+    if (!this.attract) {
+      if (this.keys.has('s') || this.keys.has('arrowdown')) iy -= 1;
+      if (this.keys.has('a') || this.keys.has('arrowleft')) ix -= 1;
+      if (this.keys.has('d') || this.keys.has('arrowright')) ix += 1;
+    }
     let mx = 0, mz = 0;
     const len = Math.hypot(ix, iy);
     if (len > 0.08) {
@@ -613,7 +623,12 @@ export class World {
     const cy = Math.sin(this.camPitch) * this.camDist, ch = Math.cos(this.camPitch) * this.camDist;
     const target = new Vector3(this.pos.x, 2.0, this.pos.z);
     const want = new Vector3(this.pos.x + Math.sin(this.camYaw) * ch, 1.6 + cy, this.pos.z + Math.cos(this.camYaw) * ch);
-    this.camera.position.lerp(want, Math.min(1, dt * 8));
+    if (this.attract) {
+      const a = this.t * 0.07;
+      want.set(Math.sin(a) * 19, 8.5, Math.cos(a) * 19);
+      target.set(0, 1.6, 0);
+    }
+    this.camera.position.lerp(want, Math.min(1, dt * (this.attract ? 1.5 : 8)));
     this.camera.lookAt(target);
     // --- animate things ---
     this.flames.forEach((f, i) => { f.scale.y = 1 + Math.sin(this.t * (9 + i * 3)) * 0.12; f.scale.x = 1 - Math.sin(this.t * (7 + i * 2)) * 0.06; });
@@ -627,6 +642,7 @@ export class World {
       const ph = (this.t + e.userData.blink) % 6;
       e.scale.y = ph > 5.85 ? 0.1 : 1;
     }
+    this.beam.visible = this.beamLight.visible = !this.attract && !!this.state && this.state.objective.kind !== 'done';
     this.beam.getObjectByName('arrow')!.position.y = 4.2 + Math.sin(this.t * 3) * 0.35;
     this.beam.getObjectByName('ring')!.scale.setScalar(1 + Math.sin(this.t * 3) * 0.08);
     this.dynamic.children.forEach((c) => {
@@ -644,7 +660,8 @@ export class World {
     this.scene.traverseVisible((o) => { if (o.userData.billboard) o.quaternion.copy(this.camera.quaternion); });
     // --- guide arrow + distance + near check ---
     const o = this.state?.objective;
-    if (o && o.kind !== 'done') {
+    this.guide.visible = !this.attract && this.guide.visible;
+    if (o && o.kind !== 'done' && !this.attract) {
       const dx = o.point.x - this.pos.x, dz = o.point.z - this.pos.z, d = Math.hypot(dx, dz);
       this.guide.position.set(this.pos.x + (dx / (d || 1)) * 1.6, 0.35, this.pos.z + (dz / (d || 1)) * 1.6);
       this.guide.rotation.y = Math.atan2(-dx, -dz);

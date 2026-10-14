@@ -1,12 +1,12 @@
 import { test, expect } from '@playwright/test';
-import { enterAnswer, info, playUntil, readSave, setTouch, openGame, walkAndInteract } from './bot';
+import { enterAnswer, info, playUntil, readSave, setTouch, openGame, walkAndInteract, open, reopen } from './bot';
 
 test('wrong-answer flow: hint after 1st miss, worked solution after 2nd, then the Campfire recap', async ({ page }) => {
   test.setTimeout(10 * 60_000);
   setTouch(true);
   const errors: string[] = [];
   page.on('pageerror', (e) => errors.push(String(e)));
-  await page.goto('./?bot=1');
+  await open(page, './?bot=1');
   await openGame(page);
   // walk to the first marker in the 3D forest and start the job
   await walkAndInteract(page);
