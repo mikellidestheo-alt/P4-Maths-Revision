@@ -281,6 +281,7 @@ export function runnerScreen(app: App, spec: RunnerSpec): Screen {
   return {
     el: root,
     title: spec.title,
+    music: 'focus',
     onBack: () => spec.onExit(),
     onKey: (e) => {
       if (document.querySelector('.jotter-overlay')) return false;

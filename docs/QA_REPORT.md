@@ -66,6 +66,25 @@ also works), a sound toggle and a short "How to play". Behind it the real 3D cam
   shared 3D world, leaving a blank screen. Screens now only unmount it if it is still theirs; covered by
   a new test.
 
+## Update — background music
+A gentle campfire lullaby plays in the background: a slow waltz (80 bpm) with a soft held chord, a
+music-box pattern, an occasional bell tune and a few crickets, all with a little reverb. It is made in
+code with Web Audio, so there are no audio files to download and it works offline. During questions the
+same song carries on, sparser and at under half the volume, with no tune or crickets so it doesn't pull
+attention. After all six rescues (dawn) it changes to a brighter key with birdsong. 🎵 turns the music on
+and off (remembered); 🔊 still silences everything. It starts on the first tap, as phones require, and
+fades out when the app is in the background. Verified:
+- **Unit tests:** over 400 bars per mood, every note fits the chord (no semitone clashes), notes stay
+  inside their bar, pitch and volume stay in range, the same seed gives the same music; focus mode has no
+  tune or animal calls and fewer notes; camp has crickets, dawn has birds.
+- **Rendered and measured** (offline in Chromium): no clicks, nearly all energy below 2 kHz (warm, nothing
+  shrill), steady loudness, and about 6 dB quieter than the sound effects (questions about 13 dB quieter).
+- **e2e:** music starts with Play; mood goes camp → focus in a question → camp again; 🎵 off stops
+  it and keeps sound effects; the setting survives a reload; 🔊 off stops the music too; 🎵 while
+  everything is off turns both back on. Layout tests pass with the extra button at all six sizes.
+- **Not verified:** how it sounds on a real phone speaker (small speakers lose the low bass; the
+  melody and music-box parts are in the range phones play well).
+
 ## Deployment status
 - GitHub Pages is enabled (source: GitHub Actions). Every push to `main` runs **Deploy to GitHub
   Pages**: unit tests → build → publish. The first runs failed only because Pages wasn't enabled yet;

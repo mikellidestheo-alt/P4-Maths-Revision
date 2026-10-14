@@ -11,6 +11,7 @@ import { nextQuestion, recapQuestion, QUESTIONS_PER_JOB } from '../../engine/pla
 import { runnerScreen } from './runner';
 import { play } from '../../game/audio';
 import { installHint } from './install';
+import { soundButtons } from '../soundButtons';
 import { GAME } from '../../config/game';
 
 /* ---------- shared bits ---------- */
@@ -38,18 +39,9 @@ export function topBar(app: App, opts: { back?: () => void; title?: string } = {
       return b;
     }));
   const coins = h('div', { class: 'coins', 'aria-label': `${d.coins} coins` }, '🪙 ', h('span', { 'data-coins': '1' }, String(d.coins)));
-  const sound = h('button', { type: 'button', class: 'icon-btn', 'data-action': 'sound', 'aria-label': d.settings.sound ? 'Sound on — tap to turn off' : 'Sound off — tap to turn on', 'aria-pressed': String(d.settings.sound) }, d.settings.sound ? '🔊' : '🔇');
-  sound.addEventListener('click', () => {
-    d.settings.sound = !d.settings.sound;
-    app.save();
-    app.applySettings();
-    sound.textContent = d.settings.sound ? '🔊' : '🔇';
-    sound.setAttribute('aria-pressed', String(d.settings.sound));
-    sound.setAttribute('aria-label', d.settings.sound ? 'Sound on — tap to turn off' : 'Sound off — tap to turn on');
-  });
   const back = opts.back ? h('button', { type: 'button', class: 'icon-btn', 'data-action': 'back', 'aria-label': 'Back' }, '⟵') : null;
   back?.addEventListener('click', opts.back!);
-  return h('header', { class: 'topbar' }, back, moons, h('div', { class: 'topbar-right' }, coins, sound));
+  return h('header', { class: 'topbar' }, back, moons, h('div', { class: 'topbar-right' }, coins, ...soundButtons(app)));
 }
 
 function confirmReplay(app: App, n: number) {
@@ -395,6 +387,6 @@ export function dawnScreen(app: App): Screen {
         h('p', {}, `⭐ ${totalStars} stars out of 18 · 🪙 ${d.coinsEarnedTotal} coins earned`),
         back)),
   );
-  return { el, title: 'Dawn' };
+  return { el, title: 'Dawn', music: 'dawn' };
 }
 

@@ -11,6 +11,8 @@ export const SCHEMA_VERSION = 3;
 
 export interface Settings {
   sound: boolean;
+  /** background music (only plays while sound is on too) */
+  music: boolean;
 }
 
 export interface MissRecord extends MissEntry {
@@ -79,7 +81,7 @@ export function defaultSave(): SaveData {
   return {
     schemaVersion: SCHEMA_VERSION,
     createdAt: new Date(now()).toISOString(),
-    settings: { sound: true },
+    settings: { sound: true, music: true },
     nights: {},
     current: null,
     topics: {},
@@ -105,7 +107,10 @@ export function migrate(raw: unknown): SaveData {
   const out: SaveData = {
     schemaVersion: SCHEMA_VERSION,
     createdAt: typeof r.createdAt === 'string' ? r.createdAt : base.createdAt,
-    settings: { sound: typeof r.settings?.sound === 'boolean' ? r.settings.sound : true },
+    settings: {
+      sound: typeof r.settings?.sound === 'boolean' ? r.settings.sound : true,
+      music: typeof r.settings?.music === 'boolean' ? r.settings.music : true,
+    },
     nights: { ...(r.nights ?? {}) },
     current: r.current ?? null,
     topics: { ...(r.topics ?? {}) },

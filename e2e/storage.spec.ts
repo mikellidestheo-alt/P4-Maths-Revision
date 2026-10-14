@@ -25,6 +25,46 @@ test('first visit goes straight into the 3D camp; there is no grown-ups area', a
   await expect(page.locator('.world-canvas canvas')).toBeVisible();
 });
 
+test('background music: starts with Play, goes quiet for questions, and the 🎵 button is remembered', async ({ page }) => {
+  const music = () => page.evaluate(() => (window as any).__campMusic.state());
+  await page.goto('./?bot=1');
+  await expect(page.locator('[data-screen="start"]')).toBeVisible();
+  await expect(page.locator('[data-action="music"]')).toHaveAttribute('aria-pressed', 'true');
+  await page.locator('[data-action="play"]').click();
+  await expect(page.locator('[data-screen="world"]')).toBeVisible();
+  await expect.poll(async () => (await music()).playing).toBe(true);
+  expect((await music()).mood).toBe('camp');
+  await expect.poll(async () => (await music()).bars).toBeGreaterThan(0);
+  // a question: same song, softer and sparser
+  await walkAndInteract(page);
+  await expect(page.locator('.q-prompt')).toBeVisible();
+  expect((await music()).mood).toBe('focus');
+  await page.locator('[data-action="exit"]').click();
+  await expect(page.locator('[data-screen="world"]')).toBeVisible();
+  expect((await music()).mood).toBe('camp');
+  // music off: sound effects stay on
+  await page.locator('[data-action="music"]').click();
+  await expect(page.locator('[data-action="music"]')).toHaveAttribute('aria-pressed', 'false');
+  await expect(page.locator('[data-action="sound"]')).toHaveAttribute('aria-pressed', 'true');
+  expect((await music()).playing).toBe(false);
+  expect((await readSave(page)).settings).toEqual({ sound: true, music: false });
+  await page.reload();
+  await expect(page.locator('[data-action="music"]')).toHaveAttribute('aria-pressed', 'false');
+  await page.locator('[data-action="play"]').click();
+  await expect(page.locator('[data-screen="world"]')).toBeVisible();
+  expect((await music()).playing).toBe(false);
+  // music on again; then sound off silences the music too
+  await page.locator('[data-action="music"]').click();
+  await expect.poll(async () => (await music()).playing).toBe(true);
+  await page.locator('[data-action="sound"]').click();
+  await expect(page.locator('[data-action="music"]')).toHaveAttribute('aria-pressed', 'false');
+  expect((await music()).playing).toBe(false);
+  // tapping 🎵 while everything is off brings both back
+  await page.locator('[data-action="music"]').click();
+  await expect(page.locator('[data-action="sound"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect.poll(async () => (await music()).playing).toBe(true);
+});
+
 test('3D: the marker moves along the path; closing mid-job resumes at the same task', async ({ page }) => {
   await open(page, './?bot=1');
   await expect(page.locator('[data-screen="world"]')).toBeVisible();

@@ -27,6 +27,7 @@ time by a tiny Vite plugin) gives offline play and clean updates.
 - [x] Follow-up: daily night limit and rest screen removed at the owner's request (save schema v3)
 - [x] Follow-up: 3D third-person forest world with quest markers (Three.js), 2D fallback, dark forest backdrop behind tasks
 - [x] Follow-up: start (title) screen over the circling 3D camp, with a 2D fallback version
+- [x] Follow-up: background music (synthesised campfire lullaby; quieter during questions; brighter at dawn; 🎵 toggle)
 
 Note: because the whole game was built in one autonomous session, the
 milestones were developed in order on one branch and verified together;

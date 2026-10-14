@@ -4,8 +4,10 @@ import { clear } from './dom';
 import { setSoundEnabled, unlockAudio } from '../game/audio';
 import { itemById } from '../game/shop';
 import { GAME } from '../config/game';
+import { setMood, setMusicEnabled } from '../game/music';
+import type { Mood } from '../game/musicScore';
 
-export type Screen = { el: HTMLElement; onBack?: () => void; onKey?: (e: KeyboardEvent) => boolean; destroy?: () => void; title?: string };
+export type Screen = { el: HTMLElement; /** background music mood (default: camp) */ music?: Mood; onBack?: () => void; onKey?: (e: KeyboardEvent) => boolean; destroy?: () => void; title?: string };
 
 /** The app shell: owns the save data, the session RNG and screen switching. */
 export class App {
@@ -62,6 +64,7 @@ export class App {
   show(screen: Screen) {
     this.current?.destroy?.();
     this.current = screen;
+    setMood(screen.music ?? 'camp');
     clear(this.root);
     this.root.appendChild(screen.el);
     window.scrollTo(0, 0);
@@ -83,6 +86,7 @@ export class App {
     const lantern = itemById(this.data.equipped.lantern ?? 'lantern-gold')?.id ?? 'lantern-gold';
     html.dataset.lantern = lantern.replace('lantern-', '');
     setSoundEnabled(st.sound);
+    setMusicEnabled(st.sound && st.music);
   }
 
   decor(): string[] {

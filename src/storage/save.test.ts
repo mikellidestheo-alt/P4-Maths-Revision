@@ -16,7 +16,7 @@ describe('save migration', () => {
     const d = migrate(v1) as unknown as Record<string, unknown>;
     expect(d.schemaVersion).toBe(SCHEMA_VERSION);
     for (const gone of ['pin', 'nickname', 'setupDone', 'unlockedByParent', 'checkins', 'daily']) expect(d, gone).not.toHaveProperty(gone);
-    expect(d.settings).toEqual({ sound: false });
+    expect(d.settings).toEqual({ sound: false, music: true });
     expect(d.coins).toBe(42);
     expect((d.nights as Record<string, { finished: boolean }>)['1'].finished).toBe(true);
     expect(d.owned).toContain('decor-rug');

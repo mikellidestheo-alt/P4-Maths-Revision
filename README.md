@@ -31,7 +31,8 @@ written addition/subtraction, triangles, symmetry, reflection).
 2. Add it to the home screen (iPhone/iPad: Share → *Add to Home Screen*; Android: ⋮ → *Add to Home
    screen* / *Install app*). It then works offline.
 3. Controls: joystick (touch) or W A S D / arrow keys (keyboard) to walk, drag to look around,
-   **Walk to marker** to be walked there, then **Start** (or Enter) at a glowing marker. 🔊 toggles sound.
+   **Walk to marker** to be walked there, then **Start** (or Enter) at a glowing marker. 🎵 turns the
+   background music on/off; 🔊 turns all sound on/off.
 
 There is **no limit on nights**: she can play as many as she likes in one go. Nights open in story
 order (Night 2 after Night 1, and so on), and finished nights can always be replayed.
@@ -83,7 +84,7 @@ src/topics/                one generator module per topic (+ tests, spot-check)
 src/world/                 the 3D forest (Three.js): map layout, quest logic, blocky models, player/camera
 src/ui/                    widgets (number pad, place value, number line, clock, grid, column…), screens, SVG art
 src/config/game.ts         spookiness
-src/game/                  nights & friends, unlocking/scoring rules, shop, sounds
+src/game/                  nights & friends, unlocking/scoring rules, shop, sounds, background music
 src/storage/save.ts        versioned local save
 src/sw-template.js         service worker (filled in at build time)
 e2e/                       Playwright tests and the playthrough bot

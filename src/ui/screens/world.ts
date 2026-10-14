@@ -194,6 +194,7 @@ export function worldScreen(app: App): Screen {
   return {
     el,
     title: 'Camp',
+    music: allFinished(app.data) ? 'dawn' : 'camp',
     onKey: (e) => {
       if ((e.key === 'Enter' || e.key === ' ' || e.key.toLowerCase() === 'e') && !act.hidden && document.activeElement?.tagName !== 'BUTTON') {
         e.preventDefault();

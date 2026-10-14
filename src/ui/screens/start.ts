@@ -11,6 +11,7 @@ import { allFinished, isFinished, nextNight } from '../../game/progress';
 import { GAME } from '../../config/game';
 import { play, unlockAudio } from '../../game/audio';
 import { use3D } from './world';
+import { soundButtons } from '../soundButtons';
 import type { World } from '../../world/world';
 import { objective } from '../../world/quest';
 import { stateForWorld } from './world';
@@ -45,15 +46,6 @@ export function startScreen(app: App): Screen {
   const playBtn = h('button', { type: 'button', class: 'btn btn-primary btn-big btn-play', 'data-action': 'play' }, label);
   playBtn.addEventListener('click', go);
 
-  const sound = h('button', { type: 'button', class: 'icon-btn', 'data-action': 'sound', 'aria-pressed': String(d.settings.sound), 'aria-label': d.settings.sound ? 'Sound on — tap to turn off' : 'Sound off — tap to turn on' }, d.settings.sound ? '🔊' : '🔇');
-  sound.addEventListener('click', () => {
-    d.settings.sound = !d.settings.sound;
-    app.save();
-    app.applySettings();
-    sound.textContent = d.settings.sound ? '🔊' : '🔇';
-    sound.setAttribute('aria-pressed', String(d.settings.sound));
-  });
-
   const moons = h('div', { class: 'start-moons', 'aria-label': `${NIGHTS.filter((x) => isFinished(d, x.n)).length} of 6 friends rescued` },
     ...NIGHTS.map((x) => moonIcon(isFinished(d, x.n) ? 'done' : x.n === (inProgress ?? n) ? 'next' : 'locked', x.n)));
 
@@ -68,7 +60,7 @@ export function startScreen(app: App): Screen {
   const el = h('div', { class: 'screen start-screen', 'data-screen': 'start' },
     stage,
     h('div', { class: 'start-overlay' },
-      h('div', { class: 'start-top' }, sound),
+      h('div', { class: 'start-top' }, ...soundButtons(app)),
       h('main', { class: 'start-panel' },
         h('h1', { class: 'start-title' }, h('span', { class: 'start-six' }, '6'), ' Nights at Camp'),
         h('p', { class: 'start-sub' }, sub),
@@ -79,6 +71,7 @@ export function startScreen(app: App): Screen {
   return {
     el,
     title: 'Welcome',
+    music: allFinished(d) ? 'dawn' : 'camp',
     onKey: (e) => {
       if (e.key === 'Enter' && document.activeElement === document.body) {
         go();

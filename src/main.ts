@@ -7,6 +7,8 @@ import { runnerScreen } from './ui/screens/runner';
 import { TOPICS } from './topics';
 import { forestBackdropUrl } from './ui/backdrop';
 import { preloadIcons } from './ui/worldIcons';
+import { musicState, renderMood } from './game/music';
+import type { Mood } from './game/musicScore';
 
 declare const __BUILD_ID__: string;
 
@@ -26,6 +28,17 @@ function boot() {
     // test/QA hooks (only with ?bot=1 in the address)
     const w = window as unknown as Record<string, unknown>;
     w.__campApp = app;
+    w.__campMusic = {
+      state: musicState,
+      /** render some music offline: loudness figures plus a 16-bit WAV (base64) to listen to */
+      render: async (mood: Mood, seconds = 20, seed = 1) => {
+        const rate = 22050;
+        const x = await renderMood(mood, seconds, seed, rate);
+        let peak = 0, sum = 0;
+        for (const v of x) { peak = Math.max(peak, Math.abs(v)); sum += v * v; }
+        return { peak, rms: Math.sqrt(sum / x.length), wav: wavBase64(x, rate) };
+      },
+    };
     w.__campPreview = (topicId: string, kind: string, tier: 1 | 2 | 3, seed = 1) => {
       const rng = makeRng(seed);
       app.show(runnerScreen(app, {
@@ -73,3 +86,18 @@ function showUpdateToast() {
 }
 
 boot();
+
+/** test helper: mono 16-bit WAV as base64 */
+function wavBase64(x: Float32Array, rate: number): string {
+  const b = new DataView(new ArrayBuffer(44 + x.length * 2));
+  const str = (o: number, t: string) => { for (let i = 0; i < t.length; i++) b.setUint8(o + i, t.charCodeAt(i)); };
+  str(0, 'RIFF'); b.setUint32(4, 36 + x.length * 2, true); str(8, 'WAVEfmt ');
+  b.setUint32(16, 16, true); b.setUint16(20, 1, true); b.setUint16(22, 1, true);
+  b.setUint32(24, rate, true); b.setUint32(28, rate * 2, true); b.setUint16(32, 2, true); b.setUint16(34, 16, true);
+  str(36, 'data'); b.setUint32(40, x.length * 2, true);
+  x.forEach((v, i) => b.setInt16(44 + i * 2, Math.max(-1, Math.min(1, v)) * 32767, true));
+  let s = '';
+  const bytes = new Uint8Array(b.buffer);
+  for (let i = 0; i < bytes.length; i += 0x8000) s += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
+  return btoa(s);
+}

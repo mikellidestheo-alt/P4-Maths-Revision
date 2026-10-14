@@ -6,6 +6,18 @@ export function setSoundEnabled(on: boolean) {
   enabled = on;
 }
 
+const readyListeners: (() => void)[] = [];
+
+/** the shared audio context, once a user gesture has created it */
+export function audioContext(): AudioContext | null {
+  return ctx;
+}
+
+/** called after every unlock (the background music uses this to start on the first tap) */
+export function onAudioReady(fn: () => void) {
+  readyListeners.push(fn);
+}
+
 export function unlockAudio() {
   try {
     if (!ctx) {
@@ -16,7 +28,9 @@ export function unlockAudio() {
     if (ctx.state === 'suspended') void ctx.resume();
   } catch {
     ctx = null;
+    return;
   }
+  for (const fn of readyListeners) fn();
 }
 
 function tone(freq: number, start: number, dur: number, type: OscillatorType = 'sine', vol = 0.12) {
