@@ -1,5 +1,5 @@
 /**
- * The question runner used for jobs (10 questions) and the Campfire recap.
+ * The question runner used for jobs (7 questions) and the Campfire recap.
  * Wrong-answer flow: 1st wrong → story feedback + hint, try again. 2nd wrong → worked solution,
  * marked for review, move on. The child can never get stuck.
  */

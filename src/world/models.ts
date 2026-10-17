@@ -4,9 +4,10 @@
 import {
   BoxGeometry, BufferGeometry, CanvasTexture, Color, ConeGeometry, CylinderGeometry, DodecahedronGeometry, Group,
   Mesh, MeshBasicMaterial, MeshLambertMaterial, Object3D, PlaneGeometry, SphereGeometry, SRGBColorSpace, TorusGeometry,
-  AdditiveBlending, DoubleSide, type Material,
+  AdditiveBlending, DoubleSide, Shape, ShapeGeometry, type Material,
 } from 'three';
 import { mergeGeometries } from 'three/examples/jsm/utils/BufferGeometryUtils.js';
+import type { Look } from '../game/look';
 
 const matCache = new Map<string, MeshLambertMaterial>();
 export function mat(color: string | number, opts: { emissive?: string | number; flat?: boolean } = {}): MeshLambertMaterial {
@@ -131,15 +132,20 @@ export function log(): Group {
 
 /* ---------------- characters ---------------- */
 
-function faceTexture(kind: 'player' | 'wren'): CanvasTexture {
+function faceTexture(kind: 'player' | 'wren' | 'girl'): CanvasTexture {
   const c = document.createElement('canvas');
   c.width = c.height = 64;
   const x = c.getContext('2d')!;
-  x.fillStyle = kind === 'player' ? '#f2c79c' : '#e8b88f';
+  x.fillStyle = kind === 'wren' ? '#e8b88f' : '#f2c79c';
   x.fillRect(0, 0, 64, 64);
   x.fillStyle = '#2a1e2e';
   x.fillRect(18, 22, 7, 9);
   x.fillRect(39, 22, 7, 9);
+  if (kind === 'girl') {
+    // little eyelashes
+    x.fillRect(16, 19, 3, 3); x.fillRect(24, 19, 3, 3);
+    x.fillRect(37, 19, 3, 3); x.fillRect(45, 19, 3, 3);
+  }
   x.strokeStyle = '#7a2e22';
   x.lineWidth = 4;
   x.beginPath();
@@ -169,14 +175,15 @@ function limb(w: number, h: number, d: number, color: string, x: number, y: numb
 }
 
 /** The player: a blocky camper (2 studs wide, like classic block-game characters). */
-export function makeAvatar(colors = { shirt: '#e8743b', trousers: '#2f3f7a', skin: '#f2c79c', hair: '#5a341e', hat: '#3f7d5a' }, kind: 'player' | 'wren' = 'player'): Avatar {
+export function makeAvatar(colors = { shirt: '#e8743b', trousers: '#2f3f7a', skin: '#f2c79c', hair: '#5a341e', hat: '#3f7d5a' }, kind: 'player' | 'wren' = 'player', opts: { cap?: boolean; face?: 'player' | 'girl' } = {}): Avatar {
   const root = new Group();
   const body = new Group();
+  body.name = 'body';
   root.add(body);
   const torso = box(1.6, 1.6, 0.8, colors.shirt, 0, 2.4, 0);
   body.add(torso);
   // head with a face on the front
-  const faceMat = new MeshLambertMaterial({ map: faceTexture(kind) });
+  const faceMat = new MeshLambertMaterial({ map: faceTexture(kind === 'wren' ? 'wren' : opts.face ?? 'player') });
   const skin = mat(colors.skin);
   const head = new Mesh(new BoxGeometry(1.15, 1.15, 1.15), [skin, skin, mat(colors.hair), skin, faceMat, skin]);
   head.position.set(0, 3.8, 0);
@@ -187,7 +194,7 @@ export function makeAvatar(colors = { shirt: '#e8743b', trousers: '#2f3f7a', ski
     def.name = 'wrenDefaultHat';
     def.add(box(1.9, 0.12, 1.9, '#7a5a2e', 0, 4.48, 0), box(1.1, 0.5, 1.1, '#8d6a36', 0, 4.75, 0));
     body.add(def);
-  } else {
+  } else if (opts.cap !== false) {
     body.add(box(1.25, 0.2, 0.5, colors.hat, 0, 4.35, 0.45)); // cap peak
   }
   const armL = limb(0.75, 1.6, 0.75, colors.shirt, -1.2, 3.2).pivot;
@@ -216,6 +223,80 @@ export function makeAvatar(colors = { shirt: '#e8743b', trousers: '#2f3f7a', ski
       body.position.y = moving ? Math.abs(Math.sin(phase)) * 0.15 : Math.sin(t * 2) * 0.04;
     },
   };
+}
+
+/* ---------------- the player's camper (boy / girl + shop clothes) ---------------- */
+
+const RAINBOW = ['#e2475b', '#f39c3d', '#f7d354', '#5cc46b', '#4f8fe0', '#8e5bd0'];
+
+function starShape(r: number): ShapeGeometry {
+  const sh = new Shape();
+  for (let i = 0; i < 10; i++) {
+    const a = (i / 10) * Math.PI * 2 - Math.PI / 2;
+    const rr = i % 2 ? r * 0.45 : r;
+    const x = Math.cos(a) * rr, y = -Math.sin(a) * rr;
+    if (i) sh.lineTo(x, y); else sh.moveTo(x, y);
+  }
+  return new ShapeGeometry(sh);
+}
+
+/** A head item for the camper (sits on top of the hair, y ≈ 4.45). */
+function camperHat(id: string): Group | null {
+  const legacy: Record<string, string> = { 'wear-head-bobble': 'outfit-woolly', 'wear-head-explorer': 'outfit-explorer', 'wear-head-crown': 'outfit-crown' };
+  if (legacy[id]) return makeHat(legacy[id]);
+  const g = new Group();
+  if (id === 'wear-head-ears') {
+    for (const x of [-0.3, 0.3]) g.add(box(0.26, 0.9, 0.14, '#f4f0ff', x, 0.45, 0), box(0.12, 0.6, 0.02, '#ffb3cf', x, 0.45, 0.08));
+    g.add(box(1.2, 0.1, 0.2, '#f4f0ff', 0, 0.02, 0));
+  } else if (id === 'wear-head-pirate') {
+    g.add(box(1.9, 0.4, 0.95, '#22202c', 0, 0.2, 0), box(1.2, 0.35, 0.9, '#22202c', 0, 0.5, 0), box(1.92, 0.08, 0.97, '#d4a73a', 0, 0.02, 0));
+    g.add(box(0.26, 0.26, 0.04, '#f2f2f2', 0, 0.3, 0.49));
+  } else return null;
+  return g;
+}
+
+/** The player's blocky camper for a Look. */
+export function makeCamper(look: Look): Avatar {
+  const girl = look.avatar === 'girl';
+  const av = makeAvatar({ shirt: look.shirt, trousers: look.trousers, skin: look.skin, hair: look.hair, hat: '#3f7d5a' }, 'player', { cap: !girl && !look.head, face: girl ? 'girl' : 'player' });
+  const body = av.root.getObjectByName('body')!;
+  if (girl) {
+    // long hair down the back and sides
+    body.add(box(1.24, 1.45, 0.3, look.hair, 0, 3.55, -0.62), box(0.16, 1.0, 0.95, look.hair, -0.63, 3.6, -0.12), box(0.16, 1.0, 0.95, look.hair, 0.63, 3.6, -0.12));
+    if (!look.head) body.add(box(0.3, 0.26, 0.12, '#ffd166', -0.45, 4.42, 0.45), box(0.3, 0.26, 0.12, '#ffd166', -0.15, 4.42, 0.45)); // hair bow
+  }
+  if (look.pattern === 'stripes') RAINBOW.forEach((c, i) => body.add(box(1.62, 0.24, 0.82, c, 0, 1.75 + i * 0.27, 0)));
+  if (look.pattern === 'star') {
+    const st = new Mesh(starShape(0.42), new MeshBasicMaterial({ color: '#ffd166', side: DoubleSide }));
+    st.position.set(0, 2.5, 0.41);
+    body.add(st);
+  }
+  if (look.head) {
+    const hat = camperHat(look.head);
+    if (hat) {
+      hat.position.y = 4.45;
+      body.add(hat);
+    }
+  }
+  if (look.face === 'wear-face-glasses' || look.face === 'wear-face-shades') {
+    const shades = look.face === 'wear-face-shades';
+    for (const x of [-0.25, 0.25]) {
+      body.add(box(0.42, 0.34, 0.04, shades ? '#ff6fa8' : '#3a2a20', x, 3.88, 0.59));
+      body.add(box(0.3, 0.22, 0.04, shades ? '#1d1830' : '#cfe8ff', x, 3.88, 0.61));
+    }
+    body.add(box(0.12, 0.06, 0.04, shades ? '#ff6fa8' : '#3a2a20', 0, 3.92, 0.6));
+  }
+  if (look.neck === 'wear-neck-scarf') {
+    body.add(box(1.3, 0.32, 0.95, '#d8434f', 0, 3.2, 0), box(1.32, 0.1, 0.97, '#f2f2f2', 0, 3.2, 0), box(0.32, 0.7, 0.1, '#d8434f', 0.38, 2.78, 0.46));
+  }
+  if (look.back === 'wear-back-pack') {
+    body.add(box(1.2, 1.25, 0.5, '#8a5a32', 0, 2.5, -0.65), box(1.22, 0.4, 0.52, '#6b4426', 0, 3.0, -0.66), box(0.5, 0.3, 0.1, '#d4a73a', 0, 2.3, -0.92));
+  } else if (look.back === 'wear-back-cape') {
+    const cape = box(1.5, 2.1, 0.08, '#d8434f', 0, 2.2, -0.48);
+    cape.rotation.x = 0.12;
+    body.add(cape, box(1.2, 0.12, 0.2, '#ffd166', 0, 3.22, -0.42));
+  }
+  return av;
 }
 
 /* ---------------- the six friends ---------------- */

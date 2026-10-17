@@ -33,6 +33,8 @@ time by a tiny Vite plugin) gives offline play and clean updates.
 - [x] Follow-up: the night cards are always on the start screen; Nights 2–6 locked (story order) until the first playthrough
 - [x] Follow-up: "Unlock All" button on the title screen behind a passcode (1234)
 - [x] Follow-up: Unlock All also opens every task in a night (any order); the friend still appears only after all three
+- [x] Follow-up: boy/girl camper choice on the title screen; camper clothes and accessories in the shop
+- [x] Follow-up: 7 questions per task (was 10), with question-type variety within each task
 
 Note: because the whole game was built in one autonomous session, the
 milestones were developed in order on one branch and verified together;

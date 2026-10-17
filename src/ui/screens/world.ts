@@ -9,6 +9,7 @@ import { topBar } from './game';
 import { World, webglAvailable, type WorldState } from '../../world/world';
 import { doneJobs, objective, openJobs, type Objective } from '../../world/quest';
 import { NIGHTS, friendOf, jobDef } from '../../game/nights';
+import { lookOf } from '../../game/look';
 import { allFinished, canStart, isFinished, startNight } from '../../game/progress';
 import { GAME } from '../../config/game';
 import { iconCanvas, preloadIcons } from '../worldIcons';
@@ -45,6 +46,7 @@ export function stateForWorld(app: App, o: Objective): WorldState {
     spook: GAME.spook,
     lantern: d.equipped.lantern ?? 'lantern-gold',
     decor: app.decor(),
+    look: lookOf(d.equipped),
     outfit: d.equipped.outfit,
     friendAccessory: d.equipped.friends,
     iconFor: iconCanvas,

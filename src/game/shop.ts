@@ -1,15 +1,19 @@
 /** Cosmetic rewards only. Nothing here changes the maths or gives an advantage. */
+import { WEAR, type WearSlot } from './look';
+
 export interface ShopItem {
   id: string;
   name: string;
   price: number;
-  slot: 'lantern' | 'decor' | 'outfit' | 'friends';
+  slot: 'lantern' | 'decor' | 'outfit' | 'friends' | WearSlot;
   /** exclusive slots: only one equipped at a time */
   exclusive: boolean;
   desc: string;
 }
 
 export const SHOP: ShopItem[] = [
+  // the camper's clothes and accessories (one per slot)
+  ...WEAR.map((w) => ({ id: w.id, name: w.name, price: w.price, slot: w.slot, exclusive: true, desc: w.desc })),
   { id: 'lantern-gold', name: 'Golden lantern glow', price: 0, slot: 'lantern', exclusive: true, desc: 'Warm and cosy.' },
   { id: 'lantern-blue', name: 'Moonlight blue glow', price: 20, slot: 'lantern', exclusive: true, desc: 'Cool and calm.' },
   { id: 'lantern-pink', name: 'Rose pink glow', price: 20, slot: 'lantern', exclusive: true, desc: 'Soft and pretty.' },
@@ -29,3 +33,11 @@ export const SHOP: ShopItem[] = [
 ];
 
 export const itemById = (id: string) => SHOP.find((i) => i.id === id);
+
+/** Shop sections, in display order. */
+export const SHOP_GROUPS: { title: string; slots: ShopItem['slot'][] }[] = [
+  { title: 'Your camper', slots: ['top', 'head', 'face', 'neck', 'back'] },
+  { title: 'Wren’s hats', slots: ['outfit'] },
+  { title: 'Camp', slots: ['decor', 'lantern'] },
+  { title: 'Forest friends', slots: ['friends'] },
+];

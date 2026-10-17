@@ -27,8 +27,9 @@ no backend, no analytics. UK English, age 8–9 reading level, cosy (never scary
 - `src/engine/types.ts` — `Question`, `Interaction` (fields, choice, placeValue, slide, numberLine,
   order, clock, grid, column, bins, lineSelect) and their answer shapes (documented on `Answer`).
 - `src/engine/build.ts` — `makeQuestion`, `oneNumber`, `manyNumbers`, `coordsFallback`, `numberFallback`.
-- `src/engine/planner.ts` — tier plan per job, adaptivity (2 wrong → easier, 3 right → harder),
-  review topic weighting, MC cap, recap variants (same `kind`, same/easier tier).
+- `src/engine/planner.ts` — `QUESTIONS_PER_JOB` (7), tier plan per job, adaptivity (2 wrong → easier, 3 right → harder),
+  review topic weighting, MC cap, recap variants (same `kind`, same/easier tier). Jobs pass `usedKinds` so
+  `pickKind` (topics/common.ts) picks a new sub-skill while one is available.
 - `src/topics/tNN.ts` — one module per topic; `generate(rng, tier, ctx)` must support **every kind
   at every tier** (the recap asks for a specific kind).
 - `src/ui/widgets/*` — one file per interaction. Every drag/draw widget also supports tap-to-place
@@ -43,6 +44,9 @@ no backend, no analytics. UK English, age 8–9 reading level, cosy (never scary
   (camera orbits the camp, no input, no quest beam). It shows a card per night listing the night's maths
   (`nightMaths(n)` in `game/nights.ts`); cards follow `isUnlocked` (story order), and all open after a full playthrough or Unlock All. Screens must only unmount the World if it is still in
   their own stage (the next screen may already have taken it).
+- `src/game/look.ts` — the camper's look: boy/girl (`equipped.avatar`, chosen on the title screen) and shop
+  clothes (`WEAR`, one per slot: top/head/face/neck/back in `equipped`). `makeCamper` (3D) and `camperSvg`
+  (2D) both draw a `Look`; `World.setLook` rebuilds the camper only when `lookKey` changes.
 - `src/game/music.ts` — background music synthesised live with Web Audio (no audio files). The notes come
   from `musicScore.ts` (pure, unit-tested): a slow 3/4 lullaby; mood `camp`, `focus` (questions: same song,
   sparser and quieter) or `dawn`. A screen picks its mood with `Screen.music`. Loudness is `GAME.musicVolume`.

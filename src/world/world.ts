@@ -11,8 +11,9 @@ import {
   CAMP_COLLIDERS, MAP_RADIUS, PATH_END, PATH_HALF_WIDTH, TREE_RADIUS, WALK_RADIUS, along, campSpot, dist, pathAngle, routeTo,
   friendSpot, treeLayout, besidePath, PROP_RADIUS, SPOT_DIST, type Collider, type V2,
 } from './layout';
-import { box, campfire, glowTexture, halo, lanternPost, log, makeAccessory, makeAvatar, makeBeam, makeDecor, makeFriend, makeGuideArrow, makeHat, makeLandmark, makeStation, mat, rock, tent, treeGeometries, type Avatar } from './models';
+import { box, campfire, glowTexture, halo, lanternPost, log, makeAccessory, makeAvatar, makeBeam, makeCamper, makeDecor, makeFriend, makeGuideArrow, makeHat, makeLandmark, makeStation, mat, rock, tent, treeGeometries, type Avatar } from './models';
 import type { Objective } from './quest';
+import { lookKey, type Look } from '../game/look';
 import { makeRng } from '../engine/rng';
 
 export interface WorldState {
@@ -28,6 +29,8 @@ export interface WorldState {
   spook: 'cosy' | 'mild' | 'spooky';
   lantern: string;
   decor: string[];
+  /** the player's camper: boy / girl and shop clothes */
+  look: Look;
   outfit?: string;
   friendAccessory?: string;
   iconFor(jobId: string): HTMLCanvasElement | null;
@@ -60,6 +63,7 @@ export class World {
   scene = new Scene();
   camera = new PerspectiveCamera(55, 1, 0.1, 400);
   avatar: Avatar;
+  private lookId = '';
   pos: V2 = { x: 0, z: 6.5 };
   heading = Math.PI; // facing -z (towards night 1's path)
   camYaw = 0;
@@ -130,6 +134,7 @@ export class World {
     this.avatar = makeAvatar();
     this.avatar.root.rotation.y = this.heading;
     this.scene.add(this.avatar.root);
+    this.lookId = '';
     this.wren = makeAvatar({ shirt: '#3f7d5a', trousers: '#3a3550', skin: '#e8b88f', hair: '#6b3b22', hat: '#7a5a2e' }, 'wren');
     this.wren.root.position.set(2.6, 0, -3.2);
     this.wren.root.rotation.y = Math.atan2(-2.6, 9.7); // looking at the camper
@@ -322,8 +327,22 @@ export class World {
 
   /* ---------------- quest-dependent objects ---------------- */
 
+  /** Rebuild the camper when the boy/girl choice or the clothes change. */
+  setLook(look: Look) {
+    const key = lookKey(look);
+    if (key === this.lookId) return;
+    this.lookId = key;
+    const old = this.avatar;
+    this.avatar = makeCamper(look);
+    this.avatar.root.position.copy(old.root.position);
+    this.avatar.root.rotation.y = old.root.rotation.y;
+    this.scene.remove(old.root);
+    this.scene.add(this.avatar.root);
+  }
+
   setState(s: WorldState) {
     this.state = s;
+    this.setLook(s.look);
     this.buildLandmarks(s.friendIds);
     this.dynamic.clear();
     this.dynColliders = [];

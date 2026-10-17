@@ -156,7 +156,7 @@ test('3D: the marker moves along the path; closing mid-job resumes at the same t
   await expect(page.locator('[data-quest]')).toContainText('Task 1 of 3');
   await walkAndInteract(page);
   await expect(page.locator('.dot.done')).toHaveCount(3);
-  for (let i = 0; i < 7; i++) await playQuestion(page);
+  for (let i = 0; i < 4; i++) await playQuestion(page);
   await page.locator('[data-action="job-back"]').tap();
   await expect(page.locator('[data-quest]')).toContainText('Task 2 of 3: Fix the trail markers');
   // the next marker is further along the path, away from camp
@@ -272,7 +272,7 @@ test('Unlock All (3D): tonight\'s tasks can be done in any order; the friend onl
   };
   const playJob = async () => {
     await expect(page.locator('.q-prompt')).toBeVisible();
-    for (let i = 0; i < 10; i++) await playQuestion(page);
+    for (let i = 0; i < 7; i++) await playQuestion(page);
     await page.locator('[data-action="job-back"]').click();
     await expect(page.locator('[data-screen="world"]')).toBeVisible();
   };
@@ -296,6 +296,46 @@ test('Unlock All (3D): tonight\'s tasks can be done in any order; the friend onl
   await expect(page.locator('[data-quest]')).toContainText('Rescue Bramble');
   const save = await readSave(page);
   for (const j of ['1.1', '1.2', '1.3']) expect(save.current.jobs[j].done).toBe(true);
+});
+
+test('boy or girl camper on the start screen; camper clothes from the shop', async ({ page }) => {
+  await page.goto('./?bot=1');
+  const boy = page.locator('[data-avatar="boy"]'), girl = page.locator('[data-avatar="girl"]');
+  await expect(boy).toHaveAttribute('aria-pressed', 'true');
+  await girl.click();
+  await expect(girl).toHaveAttribute('aria-pressed', 'true');
+  await expect(boy).toHaveAttribute('aria-pressed', 'false');
+  expect((await readSave(page)).equipped.avatar).toBe('girl');
+  // the 3D camper behind the menu changes straight away
+  expect(await page.evaluate(() => (window as any).__campApp.world.lookId)).toMatch(/^girl\|/);
+  // remembered
+  await page.reload();
+  await expect(page.locator('[data-avatar="girl"]')).toHaveAttribute('aria-pressed', 'true');
+  // shop: buy and wear a hat, then take it off
+  await page.evaluate((k) => { const d = JSON.parse(localStorage.getItem(k)!); d.coins = 100; localStorage.setItem(k, JSON.stringify(d)); }, KEY);
+  await page.reload();
+  await page.locator('[data-action="play"]').click();
+  await expect(page.locator('[data-screen="world"]')).toBeVisible();
+  await page.locator('[data-action="shop"]').click();
+  await expect(page.locator('.shop-group').first()).toHaveText('Your camper');
+  await page.locator('[data-item="wear-head-pirate"]').click();
+  await expect(page.locator('[data-item="wear-head-pirate"]')).toHaveText(/Wearing/);
+  let save = await readSave(page);
+  expect(save.coins).toBe(65);
+  expect(save.equipped.head).toBe('wear-head-pirate');
+  // only one hat at a time
+  await page.locator('[data-item="wear-head-ears"]').click();
+  save = await readSave(page);
+  expect(save.equipped.head).toBe('wear-head-ears');
+  await expect(page.locator('[data-item="wear-head-pirate"]')).toHaveText('Wear');
+  // back in the forest the camper wears it
+  await page.locator('[data-action="back"]').click();
+  await expect(page.locator('[data-screen="world"]')).toBeVisible();
+  expect(await page.evaluate(() => (window as any).__campWorld.lookId)).toContain('wear-head-ears');
+  // take it off again
+  await page.locator('[data-action="shop"]').click();
+  await page.locator('[data-item="wear-head-ears"]').click();
+  expect((await readSave(page)).equipped.head).toBeUndefined();
 });
 
 test('2D fallback also has the start screen', async ({ page }) => {
@@ -399,7 +439,7 @@ test('2D fallback: closing the app mid-night resumes where she left off', async 
   await reopen(page);
   await expect(page.locator('[data-action="start"]')).toHaveText(/Continue Night 1/);
   await page.locator('[data-action="start"]').tap();
-  await expect(page.locator('[data-job="1.1"]')).toContainText('3/10 done');
+  await expect(page.locator('[data-job="1.1"]')).toContainText('3/7 done');
   await page.locator('[data-job="1.1"]').tap();
   await expect(page.locator('.dot.done')).toHaveCount(3);
 });

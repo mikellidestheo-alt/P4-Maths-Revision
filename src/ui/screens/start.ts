@@ -6,7 +6,8 @@
 import { h } from '../dom';
 import type { App, Screen } from '../app';
 import { nav } from '../nav';
-import { campScene, jobIcon, moonIcon } from '../art';
+import { camperSvg, campScene, jobIcon, moonIcon } from '../art';
+import { lookOf, type AvatarKind } from '../../game/look';
 import { JOB_ICON, NIGHTS, friendOf, nightMaths } from '../../game/nights';
 import { allFinished, isFinished, isUnlocked, nextNight, startNight } from '../../game/progress';
 import { modal } from './game';
@@ -95,6 +96,21 @@ export function startScreen(app: App): Screen {
   }));
   const nextCard = picker.querySelector<HTMLElement>('.pick-next');
 
+  // boy or girl camper (changes the 3D camper behind the menu straight away)
+  const avatarBtns = (['boy', 'girl'] as AvatarKind[]).map((k) => {
+    const b = h('button', { type: 'button', class: 'avatar-btn', 'data-avatar': k, 'aria-pressed': String(lookOf(d.equipped).avatar === k) },
+      camperSvg(lookOf(d.equipped, k)), h('span', {}, k === 'boy' ? 'Boy' : 'Girl'));
+    b.addEventListener('click', () => {
+      d.equipped.avatar = k;
+      app.save();
+      play('tap');
+      avatarBtns.forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.avatar === k)));
+      world?.setLook(lookOf(d.equipped));
+    });
+    return b;
+  });
+  const avatarPick = h('div', { class: 'avatar-pick', role: 'group', 'aria-label': 'Choose your camper' }, h('span', { class: 'avatar-label' }, 'Your camper:'), ...avatarBtns);
+
   const how = h('details', { class: 'start-how' },
     h('summary', {}, 'How to play'),
     h('ul', {},
@@ -110,6 +126,7 @@ export function startScreen(app: App): Screen {
       h('main', { class: 'start-panel' },
         h('h1', { class: 'start-title' }, h('span', { class: 'start-six' }, '6'), ' Nights at Camp'),
         h('p', { class: 'start-sub' }, sub),
+        avatarPick,
         // Continue (if a night is under way) on top, then the nights, then "Explore the camp"
         inProgress ? playBtn : null,
         picker,

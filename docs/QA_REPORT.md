@@ -158,6 +158,34 @@ path order. (The 2D fallback always let the three jobs be picked in any order.)
 - **e2e (3D):** with Unlock All, Night 1 played as Task 3 → Task 2 → Task 1 through the real Start button
   at each sign; the quest stays on tasks until the third is done, then shows "Rescue Bramble".
 
+## Update — boy/girl camper, camper clothes, 7 questions per task
+**Camper choice.** The title screen has "Your camper: [Boy] [Girl]" with a little picture of each. The
+choice is saved (`equipped.avatar`) and the 3D camper behind the menu changes straight away. The girl
+camper has long hair (and a hair bow when no hat is worn) and a pink top; the boy has short hair and a
+green cap.
+**Shop.** New "Your camper" section (one item per slot, tap again to take it off): Red hoodie, Purple
+jumper, Camp shirt, Rainbow stripes, Star T-shirt; Bobble hat, Explorer hat, Flower crown, Bunny ears,
+Pirate hat; Round glasses, Star sunglasses; Cosy scarf; Explorer backpack, Hero cape (20–35 coins). The
+shop is now in sections (Your camper / Wren's hats / Camp / Forest friends) with a picture of the camper
+that updates as things are worn. Everything shows on the 3D camper. Cosmetic only, as before.
+**7 questions per task** (was 10). The tier plan keeps its shape — 1,1,1,2,2,2,3 — so each task still ends
+on a harder question (just cutting the last three would have removed every tier-3 question). Within a task
+a question type isn't repeated while another type is still possible at that tier (`usedKinds` →
+`pickKind`), so the shorter task still covers its sub-skills: e.g. Rounding gets number-line rounding,
+typed rounding, ordering and comparing before any repeats, then rounding to a range at tier 3. A night is
+now 21 job questions (126 for the whole game) plus any campfire recap.
+- **Unit tests:** look defaults, girl + clothes, broken/old saves ignored, look key; every camper item is in
+  the shop in its own slot, each shop item is listed once in a section; 7-question plan 1,1,1,2,2,2,3;
+  adaptivity; full sessions with no repeats and ≤ 10% multiple choice; in 150 jobs per topic every job uses
+  as many different question types as the plan can reach (at most one fewer); `pickKind` skips used kinds
+  only while another is possible at that tier, and the recap can still force a kind.
+- **e2e:** choosing Girl updates the save and the 3D camper and survives a reload; buying a hat spends the
+  coins and wears it, a second hat replaces it, the 3D camper wears it back in the forest, tapping again
+  takes it off; both bot playthroughs (3D and 2D) now play 126 job questions to the Dawn.
+- **Screenshots reviewed:** title screen with the chooser; girl camper front and back; girl in rainbow
+  stripes, flower crown, glasses, scarf and cape; boy in star T-shirt, pirate hat, star sunglasses and
+  backpack; the shop with its camper preview.
+
 ## Deployment status
 - GitHub Pages is enabled (source: GitHub Actions). Every push to `main` runs **Deploy to GitHub
   Pages**: unit tests → build → publish. The first runs failed only because Pages wasn't enabled yet;

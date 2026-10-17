@@ -2,7 +2,7 @@
  * ALL difficulty ranges live here so they are easy to tune.
  *
  * Tiers: 1 = warm-up, 2 = core, 3 = stretch.
- * Each topic plan is 10 questions ramping roughly 4 × tier 1, 4 × tier 2, 2 × tier 3.
+ * Each topic plan is 7 questions ramping 3 × tier 1, 3 × tier 2, 1 × tier 3.
  * Change a number, run `npm test` (the generator tests read these values), then redeploy.
  */
 
@@ -10,16 +10,16 @@ export type Tier = 1 | 2 | 3;
 export type Range = [min: number, max: number];
 
 export const PLAN = {
-  /** Planned tiers for a 10-question topic set. */
-  tiers: [1, 1, 1, 1, 2, 2, 2, 2, 3, 3] as Tier[],
+  /** Planned tiers for a 7-question topic set (still ends on a harder one). */
+  tiers: [1, 1, 1, 2, 2, 2, 3] as Tier[],
   /** Easier / harder variants chosen by the end-of-night check-in nudge (-1 / +1). */
-  tiersEasier: [1, 1, 1, 1, 1, 2, 2, 2, 2, 3] as Tier[],
-  tiersHarder: [1, 1, 2, 2, 2, 2, 2, 3, 3, 3] as Tier[],
+  tiersEasier: [1, 1, 1, 1, 2, 2, 3] as Tier[],
+  tiersHarder: [1, 1, 2, 2, 2, 3, 3] as Tier[],
   /** Adaptive: this many wrong in a row → next question one tier easier. */
   wrongStreakToEase: 2,
   /** Adaptive: this many right in a row → next question one tier harder. */
   rightStreakToHarden: 3,
-  /** Max multiple-choice questions in one 10-question job. */
+  /** Max multiple-choice questions in one 7-question job. */
   maxChoicePerJob: 2,
   /** Max questions in a Campfire recap (most recent misses first). */
   maxRecap: 8,

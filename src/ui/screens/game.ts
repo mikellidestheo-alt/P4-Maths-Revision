@@ -170,7 +170,7 @@ export function nightScreen(app: App, n: number): Screen {
         h('strong', {}, `${i + 1}. ${job.job}`),
         h('span', { class: 'job-topic' }, job.review ? job.title : `${job.id} ${job.title}`),
         h('span', { class: 'job-blurb' }, JOB_BLURB[jobId] ?? ''),
-        done ? h('span', { class: 'job-done' }, `✔ Done — ${firsts}/10 first try`) : st.index > 0 ? h('span', { class: 'job-progress' }, `${st.index}/10 done`) : null),
+        done ? h('span', { class: 'job-done' }, `✔ Done — ${firsts}/${QUESTIONS_PER_JOB} first try`) : st.index > 0 ? h('span', { class: 'job-progress' }, `${st.index}/${QUESTIONS_PER_JOB} done`) : null),
     );
     b.addEventListener('click', () => {
       if (done) {
@@ -207,7 +207,7 @@ export function nightScreen(app: App, n: number): Screen {
   return { el, title: `Night ${n}`, onBack: () => nav.home(app) };
 }
 
-/* ---------- a job (10 questions) ---------- */
+/* ---------- a job (7 questions) ---------- */
 
 export function jobScreen(app: App, jobId: string): Screen {
   const d = app.data;
@@ -255,7 +255,7 @@ function jobDone(app: App, jobId: string) {
     h('main', { class: 'centre-panel' },
       h('div', { class: 'big-icon' }, jobIcon(JOB_ICON[jobId] ?? 'star')),
       h('h1', {}, 'Job done!'),
-      h('p', {}, `${job.job}: ${firsts} out of 10 right first time.`),
+      h('p', {}, `${job.job}: ${firsts} out of ${QUESTIONS_PER_JOB} right first time.`),
       speech(firsts >= 8 ? 'Amazing work! The camp is looking great.' : firsts >= 5 ? 'Good job! Every question makes you stronger.' : 'You kept going — that’s what real campers do! Tricky ones will come back at the campfire.', d.equipped.outfit),
       back,
       installHint(app)));

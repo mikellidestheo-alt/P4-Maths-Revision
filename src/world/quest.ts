@@ -7,6 +7,7 @@
 import type { SaveData } from '../storage/save';
 import { NIGHTS, friendOf, jobDef } from '../game/nights';
 import { nextNight } from '../game/progress';
+import { QUESTIONS_PER_JOB } from '../engine/planner';
 import { SPOT_DIST, along, type V2 } from './layout';
 
 export type Objective =
@@ -24,7 +25,7 @@ export function objective(d: SaveData): Objective {
   const def = NIGHTS[n - 1];
   for (let i = 0; i < def.jobs.length; i++) {
     const jobId = def.jobs[i];
-    const done = run ? run.jobs[jobId]?.done || run.jobs[jobId]?.index >= 10 : false;
+    const done = run ? run.jobs[jobId]?.done || run.jobs[jobId]?.index >= QUESTIONS_PER_JOB : false;
     if (!done) {
       const step = (i + 1) as 1 | 2 | 3;
       return { kind: 'job', night: n, step, jobId, dist: STEP_DIST[i], point: along(n, STEP_DIST[i]), label: jobDef(jobId).job, started: !!run };
@@ -40,7 +41,7 @@ export function objective(d: SaveData): Objective {
 
 const jobDone = (d: SaveData, n: number, j: string) => {
   const run = d.current;
-  return !!run && run.night === n && (run.jobs[j]?.done || run.jobs[j]?.index >= 10);
+  return !!run && run.night === n && (run.jobs[j]?.done || run.jobs[j]?.index >= QUESTIONS_PER_JOB);
 };
 
 /** Tonight's finished tasks (any order). */

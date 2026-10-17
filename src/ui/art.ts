@@ -3,6 +3,7 @@ import { s, svgRoot } from './dom';
 import { makeRng } from '../engine/rng';
 import { starPath } from './visuals';
 import type { Spook } from '../config/game';
+import type { Look } from '../game/look';
 
 type G = SVGGElement;
 
@@ -381,5 +382,56 @@ export function moonIcon(state: 'locked' | 'next' | 'done', n: number): SVGSVGEl
   else if (state === 'next') svg.append(s('circle', { r: 16, class: 'moon-ring' }), s('path', { d: 'M 0 -16 A 16 16 0 0 1 0 16 A 9 16 0 0 0 0 -16', class: 'moon-half' }));
   else svg.append(s('circle', { r: 16, class: 'moon-ring' }));
   svg.append(s('text', { y: 5, 'text-anchor': 'middle', class: 'moon-num' }, String(n)));
+  return svg;
+}
+
+/* ---------- the player's camper (front view, matches the 3D model) ---------- */
+
+/** A block in 3D-model units: centre x, bottom y, width, height (1 unit = 10px, y up). */
+function blk(cx: number, y0: number, w: number, hgt: number, fill: string, extra: Record<string, string | number> = {}) {
+  return s('rect', { x: (cx - w / 2) * 10, y: -(y0 + hgt) * 10, width: w * 10, height: hgt * 10, fill, ...extra });
+}
+
+export function camperSvg(look: Look, label?: string): SVGSVGElement {
+  const girl = look.avatar === 'girl';
+  const svg = svgRoot('-20 -56 40 58', { class: 'camper', role: label ? 'img' : null, 'aria-label': label ?? null, 'aria-hidden': label ? null : 'true' });
+  const add = (...els: SVGElement[]) => svg.append(...els);
+  // behind the body
+  if (look.back === 'wear-back-cape') add(blk(0, 1.1, 1.8, 2.15, '#d8434f'));
+  if (girl) add(blk(0, 2.85, 1.42, 1.45, look.hair));
+  // legs, arms, hands, torso
+  add(blk(-0.41, 0, 0.78, 1.6, look.trousers), blk(0.41, 0, 0.78, 1.6, look.trousers));
+  add(blk(-1.2, 1.6, 0.75, 1.6, look.shirt), blk(1.2, 1.6, 0.75, 1.6, look.shirt));
+  add(blk(-1.2, 1.25, 0.7, 0.35, look.skin), blk(1.2, 1.25, 0.7, 0.35, look.skin));
+  add(blk(0, 1.6, 1.6, 1.6, look.shirt));
+  if (look.pattern === 'stripes') ['#e2475b', '#f39c3d', '#f7d354', '#5cc46b', '#4f8fe0', '#8e5bd0'].forEach((c, i) => add(blk(0, 1.63 + i * 0.26, 1.6, 0.2, c)));
+  if (look.pattern === 'star') add(s('path', { d: starPath(4.4, 2), fill: '#ffd166', transform: 'translate(0 -25)' }));
+  if (look.back === 'wear-back-pack') add(blk(-0.48, 1.9, 0.2, 1.3, '#6b4426'), blk(0.48, 1.9, 0.2, 1.3, '#6b4426'));
+  if (look.neck === 'wear-neck-scarf') add(blk(0, 3.02, 1.3, 0.34, '#d8434f'), blk(0, 3.14, 1.3, 0.1, '#f2f2f2'), blk(0.38, 2.45, 0.32, 0.7, '#d8434f'));
+  // head and face
+  add(blk(0, 3.24, 1.15, 1.15, look.skin));
+  add(blk(-0.25, 3.72, 0.13, 0.17, '#2a1e2e'), blk(0.25, 3.72, 0.13, 0.17, '#2a1e2e'));
+  if (girl) for (const x of [-0.33, -0.17, 0.17, 0.33]) add(blk(x, 3.92, 0.06, 0.06, '#2a1e2e'));
+  add(s('path', { d: 'M -3.4 -34.2 Q 0 -31.4 3.4 -34.2', stroke: '#7a2e22', 'stroke-width': 0.9, fill: 'none', 'stroke-linecap': 'round' }));
+  add(blk(-0.42, 3.5, 0.14, 0.1, 'rgba(240,120,110,0.5)'), blk(0.42, 3.5, 0.14, 0.1, 'rgba(240,120,110,0.5)'));
+  // hair
+  add(blk(0, 4.12, 1.22, 0.32, look.hair));
+  if (girl) add(blk(-0.63, 3.1, 0.16, 1.05, look.hair), blk(0.63, 3.1, 0.16, 1.05, look.hair));
+  if (!girl && !look.head) add(blk(0, 4.25, 1.25, 0.2, '#3f7d5a'));
+  if (girl && !look.head) add(blk(-0.45, 4.3, 0.3, 0.26, '#ffd166'), blk(-0.15, 4.3, 0.3, 0.26, '#ffd166'));
+  // face items
+  if (look.face === 'wear-face-glasses' || look.face === 'wear-face-shades') {
+    const sh = look.face === 'wear-face-shades';
+    for (const x of [-0.25, 0.25]) add(blk(x, 3.71, 0.42, 0.34, sh ? '#ff6fa8' : '#3a2a20'), blk(x, 3.77, 0.3, 0.22, sh ? '#1d1830' : '#cfe8ff'));
+    add(blk(0, 3.86, 0.12, 0.06, sh ? '#ff6fa8' : '#3a2a20'));
+  }
+  // head items
+  switch (look.head) {
+    case 'wear-head-bobble': add(blk(0, 4.4, 1.25, 0.55, '#d8434f'), blk(0, 4.36, 1.3, 0.18, '#f2f2f2'), blk(0, 4.95, 0.35, 0.35, '#f2f2f2')); break;
+    case 'wear-head-explorer': add(blk(0, 4.4, 2.0, 0.1, '#c9a465'), blk(0, 4.5, 1.15, 0.55, '#d8b878'), blk(0, 4.5, 1.17, 0.12, '#6b4a22')); break;
+    case 'wear-head-crown': ['#ff8fb1', '#ffd36b', '#9be38b', '#8fc7ff', '#ff8fb1'].forEach((c, i) => add(blk(-0.56 + i * 0.28, 4.42, 0.26, 0.26, c))); break;
+    case 'wear-head-ears': for (const x of [-0.3, 0.3]) add(blk(x, 4.45, 0.26, 0.9, '#f4f0ff'), blk(x, 4.6, 0.12, 0.6, '#ffb3cf')); add(blk(0, 4.42, 1.2, 0.1, '#f4f0ff')); break;
+    case 'wear-head-pirate': add(blk(0, 4.45, 1.9, 0.4, '#22202c'), blk(0, 4.85, 1.2, 0.35, '#22202c'), blk(0, 4.45, 1.92, 0.08, '#d4a73a'), blk(0, 4.62, 0.26, 0.26, '#f2f2f2')); break;
+  }
   return svg;
 }

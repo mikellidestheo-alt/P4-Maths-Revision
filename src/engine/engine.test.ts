@@ -4,7 +4,7 @@ import { parseNumber, parseTime, parse12, parse24, parseClockFace } from './answ
 import { makeRng } from './rng';
 import { symmetryAxes } from './geometry';
 import { SYM_SHAPES } from '../topics/t26';
-import { newJobState, nextQuestion, noteShown, recordResult, recapQuestion, tierFor, type JobDef } from './planner';
+import { newJobState, nextQuestion, noteShown, recordResult, recapQuestion, tierFor, QUESTIONS_PER_JOB, type JobDef } from './planner';
 import { TOPIC_LIST, UNIT1, UNIT2 } from '../topics';
 
 describe('format', () => {
@@ -89,18 +89,19 @@ describe('planner', () => {
   it('ramps tiers 1 → 3 with no adaptivity', () => {
     let s = newJobState();
     const tiers: number[] = [];
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < QUESTIONS_PER_JOB; i++) {
       tiers.push(tierFor(s, 0));
       s = recordResult(s, i % 2 === 0); // alternating → no streaks
     }
-    expect(tiers).toEqual([1, 1, 1, 1, 2, 2, 2, 2, 3, 3]);
+    expect(QUESTIONS_PER_JOB).toBe(7);
+    expect(tiers).toEqual([1, 1, 1, 2, 2, 2, 3]);
   });
 
   it('eases after 2 wrong and hardens after 3 right', () => {
     let s = newJobState();
     s = recordResult(s, true); s = recordResult(s, true); s = recordResult(s, true);
     expect(s.offset).toBe(1);
-    expect(tierFor(s, 0)).toBe(2);
+    expect(tierFor(s, 0)).toBe(3); // planned tier 2, one harder
     s = recordResult(s, false); s = recordResult(s, false);
     expect(s.offset).toBe(0);
     s = recordResult(s, false); s = recordResult(s, false);
@@ -116,7 +117,7 @@ describe('planner', () => {
         const job = jobFor(id);
         let s = newJobState();
         const sigs: string[] = [];
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < QUESTIONS_PER_JOB; i++) {
           const q = nextQuestion(rng, job, s, { nudge: 0, weights: {}, seen });
           s = noteShown(s, q);
           sigs.push(q.signature);
@@ -124,12 +125,47 @@ describe('planner', () => {
           if (q.isChoice) totalChoice++;
           s = recordResult(s, rng.chance(0.75));
         }
-        expect(new Set(sigs).size).toBe(10);
+        expect(new Set(sigs).size).toBe(QUESTIONS_PER_JOB);
         expect(s.choiceCount).toBeLessThanOrEqual(job.review ? 1 : 2);
         if (job.review) for (const c of Object.values(s.topicCounts)) expect(c).toBeLessThanOrEqual(2);
       }
     }
     expect(totalChoice / totalQ).toBeLessThan(0.1);
+  });
+
+  it('a 7-question job covers as many different sub-skills as it can before repeating one', () => {
+    for (const t of TOPIC_LIST) {
+      const job = jobFor(t.id);
+      const runs: string[][] = [];
+      for (let seed = 0; seed < 150; seed++) {
+        const rng = makeRng(seed * 7 + 1);
+        let s = newJobState();
+        const kinds: string[] = [];
+        for (let i = 0; i < QUESTIONS_PER_JOB; i++) {
+          const q = nextQuestion(rng, job, s, { nudge: 0, weights: {}, seen: new Set() });
+          s = noteShown(s, q);
+          kinds.push(q.kind);
+          s = recordResult(s, i % 2 === 0);
+        }
+        runs.push(kinds);
+      }
+      // every kind this plan can reach shows up somewhere, and each job uses all of them it can fit
+      const reachable = new Set(runs.flat()).size;
+      for (const kinds of runs) expect(new Set(kinds).size, `${t.id}: ${kinds.join(',')}`).toBeGreaterThanOrEqual(Math.min(reachable, QUESTIONS_PER_JOB) - 1);
+    }
+  });
+
+  it('pickKind: skips kinds already asked while another kind is possible at this tier', async () => {
+    const { pickKind } = await import('../topics/common');
+    const w: Record<string, [number, number, number]> = { a: [9, 9, 9], b: [1, 1, 1], c: [0, 1, 1] };
+    const rng = makeRng(3);
+    for (let i = 0; i < 50; i++) {
+      expect(pickKind(rng, { usedKinds: ['a'] }, w, 1)).toBe('b'); // c isn't possible at tier 1
+      expect(['b', 'c']).toContain(pickKind(rng, { usedKinds: ['a'] }, w, 2));
+      expect(pickKind(rng, { usedKinds: ['a', 'b'] }, w, 2)).toBe('c');
+      expect(['a', 'b', 'c']).toContain(pickKind(rng, { usedKinds: ['a', 'b', 'c'] }, w, 2)); // all used: any
+      expect(pickKind(rng, { usedKinds: ['a'], kind: 'a' }, w, 1)).toBe('a'); // the recap still forces a kind
+    }
   });
 
   it('recap questions keep the same skill and never get harder', () => {

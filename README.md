@@ -8,11 +8,14 @@ written addition/subtraction, triangles, symmetry, reflection).
 
 - A **3D forest camp** in a blocky low-poly style: you walk your camper in third person (joystick on
   touch screens, WASD/arrow keys on a laptop, drag to look around).
-- Six nights, ~15–20 minutes each, no daily limit. Each night a forest friend is lost at the end of one
+- Six nights, ~10–15 minutes each, no daily limit. Each night a forest friend is lost at the end of one
   of the six paths. A glowing **quest marker** leads you along the path: Task 1 → Task 2 → Task 3 →
   (the campfire, if anything needs fixing) → and only then does the friend appear at the end of the path.
-- Each task is one topic's 10 questions, shown as a 2D screen over a dark forest scene. Missed questions
-  come back at the campfire with fresh numbers.
+- Each task is one topic's 7 questions (a different kind of question each time while there are new kinds
+  left), shown as a 2D screen over a dark forest scene. Missed questions come back at the campfire with
+  fresh numbers.
+- On the title screen she chooses a **boy or girl camper**; the shop sells camper clothes and accessories
+  (tops, hats, glasses, a scarf, a backpack, a cape) as well as camp decorations.
 - **"Walk to marker"** walks the camper there automatically, for anyone who finds the joystick tricky.
 - Devices without 3D support (no WebGL) automatically get the 2D version of the camp, with the same
   questions and progress. Add `?2d=1` to the address to force it.
@@ -72,12 +75,13 @@ it arrives mid-session); offline it falls back to the last good version. Old cac
 ## Tuning difficulty
 
 All ranges live in **`src/config/difficulty.ts`** (one block per topic, plus the plan: tiers per
-10-question set, adaptivity streaks, multiple-choice cap, recap size). Examples:
+7-question set, adaptivity streaks, multiple-choice cap, recap size). Examples:
 
 - Allow decimals in ×÷10/100: `T14.allowDecimals = true`.
 - Turn off "angles add up to 180°": `T25.includeAngleSum = false`.
 - Smaller numbers in written methods: `T23.digits` / `T23.maxDigits`.
-- Gentler start: edit `PLAN.tiers` (e.g. five tier-1 questions).
+- Gentler start: edit `PLAN.tiers` (e.g. four tier-1 questions). Questions per task: `QUESTIONS_PER_JOB`
+  in `src/engine/planner.ts` (the tier lists should be at least that long).
 
 After a change run `npm test` (the generator tests check every answer key) and push to `main`.
 

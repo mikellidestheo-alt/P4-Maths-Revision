@@ -38,10 +38,10 @@ test('bot plays all six nights in the 3D world through the real UI and reaches t
   for (let n = 1; n <= 6; n++) expect(save.nights[n].finished).toBe(true);
   for (let n = 1; n <= 6; n++) expect(save.nights[n].bestStars).toBe(3);
   for (const t of ['1.1', '1.2', '1.3', '1.4', '1.5', '1.6', '1.7', '1.8', '2.1', '2.2', '2.3', '2.4', '2.5', '2.6', '2.7']) {
-    expect(save.topics[t].attempts, t).toBeGreaterThanOrEqual(10);
+    expect(save.topics[t].attempts, t).toBeGreaterThanOrEqual(7);
     expect(save.topics[t].firstTry, t).toBe(save.topics[t].attempts);
   }
-  expect(questions).toBe(180);
+  expect(questions).toBe(126); // 6 nights × 3 jobs × 7 questions
   // question types are random, so only the ones that are (almost) certain to appear are required here;
   // every interaction type is exercised deterministically in layout.spec.ts and widgets.spec.ts
   for (const t of ['fields', 'grid', 'column']) expect([...types], t).toContain(t);

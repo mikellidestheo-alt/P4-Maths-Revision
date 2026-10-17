@@ -3,7 +3,7 @@ import { TOPICS } from '../topics';
 import type { Rng } from './rng';
 import type { Question } from './types';
 
-/** A "job" = one 10-question set: a single topic, or a mixed review. */
+/** A "job" = one 7-question set: a single topic, or a mixed review. */
 export interface JobDef {
   id: string; // topic id, or 'R1' / 'R2' / 'F'
   title: string;
@@ -20,11 +20,13 @@ export interface JobState {
   choiceCount: number;
   topicCounts: Record<string, number>;
   firstTry: boolean[];
+  /** "topicId:kind" of each question shown, so the job varies its sub-skills (missing in older saves) */
+  kindsUsed?: string[];
 }
 
 export const newJobState = (): JobState => ({ index: 0, offset: 0, rightStreak: 0, wrongStreak: 0, choiceCount: 0, topicCounts: {}, firstTry: [] });
 
-export const QUESTIONS_PER_JOB = 10;
+export const QUESTIONS_PER_JOB = 7;
 
 export function plannedTiers(nudge: number): Tier[] {
   return nudge > 0 ? PLAN.tiersHarder : nudge < 0 ? PLAN.tiersEasier : PLAN.tiers;
@@ -76,7 +78,8 @@ export function nextQuestion(rng: Rng, job: JobDef, state: JobState, opts: { nud
   let last: Question | null = null;
   for (let tries = 0; tries < 60; tries++) {
     const topicId = job.review ? pickReviewTopic(rng, job, state, opts.weights) : job.topics[0];
-    const q = TOPICS[topicId].generate(rng, tier, { avoidChoice: state.choiceCount >= cap });
+    const usedKinds = (state.kindsUsed ?? []).filter((k) => k.startsWith(`${topicId}:`)).map((k) => k.slice(topicId.length + 1));
+    const q = TOPICS[topicId].generate(rng, tier, { avoidChoice: state.choiceCount >= cap, usedKinds });
     last = q;
     if (opts.seen.has(q.signature)) continue;
     if (q.isChoice && state.choiceCount >= cap) continue;
@@ -92,6 +95,7 @@ export function noteShown(state: JobState, q: Question): JobState {
     ...state,
     choiceCount: state.choiceCount + (q.isChoice ? 1 : 0),
     topicCounts: { ...state.topicCounts, [q.topicId]: (state.topicCounts[q.topicId] ?? 0) + 1 },
+    kindsUsed: [...(state.kindsUsed ?? []), `${q.topicId}:${q.kind}`],
   };
 }
 

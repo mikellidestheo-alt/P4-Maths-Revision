@@ -112,6 +112,8 @@ export interface GenContext {
   kind?: string;
   /** Kinds to avoid (e.g. multiple choice when the job's MC cap is used up). */
   avoidChoice?: boolean;
+  /** Kinds already asked in this job: a different kind is chosen while one is still available. */
+  usedKinds?: string[];
 }
 
 export interface TopicModule {
